@@ -1,0 +1,1812 @@
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% Etat de l'art Projet de recherche X4
+% Promotion X2027
+% Propriétaire du document :  Groupe 1, Avril 2026
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+\documentclass{ipgpmaster}
+%
+% Pour saisir directement les lettres accentuées :
+% \usepackage[applemac]{inputenc} % pour utilisateurs mac
+% \usepackage[ansinew]{inputenc}  % pour Windows ANSI
+% \usepackage[latin1]{inputenc}   % pour Unix Latin1
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+
+% \bibliography{master_AT}  % pour bibtex
+\addbibresource{masterBib.bib} % pour biblatex
+
+\begin{document}
+
+\checkyears
+
+\vspace*{5mm}
+
+%\setkeys{Gin}{draft} % images non affichées
+\setkeys{Gin}{draft=false} % images affichées
+
+%\linenumbers % Numerotation des lignes pour relecture
+%Select here the language 
+%\selectlanguage{french}   
+\selectlanguage{english} 
+
+
+\def\author{Group 1}
+%\footnote{
+%The members of the group are : 
+%}}
+\def\title{Research Project - State of the art}
+\def\unit{Group 1}
+\def\team {Rosilia MODJO, Nadia TCHUENTE, Joseph NKOULOU}
+\def\supervisor{Aloys NGUEPI \& Humphrey OJONG}
+\def\mydate{\today}
+
+\Entete
+
+
+\begin{abstract}
+Design and prototyping of a system to locate an operator within an industrial workshop in order to automatically guide them to the equipment requiring maintenance. The solution is based on WiSLAM-type approaches, combining Wi-Fi signal strength measurements and potentially inertial sensors (FootSLAM) or visual SLAM to improve accuracy.
+\end{abstract}
+
+\vfill
+
+\rule{\linewidth}{0.4pt}\\[3mm]
+\textit{
+A state of the art is a critical and structured review of the existing scientific literature on a given research topic. It is a document that shows what has already been done, what methods and technologies have been explored, what results have been obtained, and what limitations remain unresolved. Its purpose is not simply to list existing works, but to synthesize them, compare them, and identify the gaps that justify the need for new research. In the context of this project, the state of the art provides the scientific foundation upon which our localization system design is built, by mapping the current landscape of indoor positioning technologies and highlighting the directions most relevant to our industrial maintenance use case. }
+
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Chapter 1 - Introduction}
+
+Currently, location is a hot topic in the high-tech sector and new technologies. Thanks to these geolocation techniques, we can now position people or equipment with varying degrees of accuracy, ranging from 10 km to 10 cm. 
+
+Being located has been a fundamental need of life since the very beginning. Initially, target location information was estimated by smelling, probing, tracing, or seeing. As the world develops, everything becomes increasingly complex, including the space we inhabit. Researchers are paying close attention to this technology and are now dealing with a place rich in information. What is important for them is to obtain as much detail as possible about the surrounding environment and their own position. 
+
+Smartphones and other wireless devices have evolved significantly in recent years, resulting in a wide range of services, including indoor location tracking. 
+
+Indoor localization is the process of determining the location of a user or device within an indoor setting or environment. Indoor device localization has been extensively studied in recent years, primarily in industrial environments and for wireless sensor networks and robotics. 
+
+However, just a decade ago, the widespread proliferation of smartphones and wearable devices with wireless communication capabilities made the localization and tracking of these devices synonymous with the localization and tracking of their corresponding users, and enabled a wide range of associated applications and services.
+
+\subsection{Research project context}
+
+In modern industrial environments, maintenance operations are critical to ensuring the continuous availability of equipment and production systems. When a technician is dispatched to intervene on a faulty machine, one of the first challenges they face is simply finding it, navigating through large, complex workshop floors where GPS signals are unavailable or unreliable indoors. This seemingly simple problem can result in significant time loss and reduced operational efficiency.
+
+Indoor localization has emerged as a key enabler for a wide range of applications, from healthcare and disaster management to building management and industrial monitoring. With the rise of the Internet of Things (IoT), the demand for accurate, real-time positioning of people and devices within enclosed spaces has grown considerably. Technologies such as Wi-Fi, Bluetooth, Zigbee, and Ultra-Wideband (UWB) have been explored as alternatives to GPS for indoor use, each offering different trade-offs between accuracy, cost, and infrastructure requirements.
+
+Among these, Wi-Fi-based localization is particularly attractive in industrial settings because Wi-Fi infrastructure is already widely deployed in most facilities. Approaches such as WiSLAM exploit Wi-Fi signal strength measurements to estimate a user's position relative to known access points, without requiring additional hardware. However, Wi-Fi alone often lacks the precision needed for fine-grained navigation in cluttered or signal-noisy environments like factory floors.
+
+To overcome this limitation, hybrid approaches combining Wi-Fi with inertial sensors, as in FootSLAM, which leverages accelerometers to track pedestrian motion or with visual SLAM techniques, which reconstruct the environment through camera-based algorithms, have shown promising results. These complementary methods allow the system to compensate for the weaknesses of each individual technology.
+
+This project therefore investigates the design and prototyping of a localization system tailored to industrial workshops, capable of guiding a maintenance operator automatically to the equipment requiring intervention. By combining WiSLAM-type approaches with inertial and potentially visual data, the goal is to provide a robust, infrastructure-light solution that operates reliably in real industrial conditions.
+
+This work takes place within the broader context of Industry 4.0, which describes the ongoing transformation of manufacturing through the integration of digital technologies, cyber-physical systems, and intelligent automation. In this paradigm, the factory of the future is expected to be not only connected and data-driven, but also capable of autonomously coordinating human operators and machines in real time.
+
+Indoor localization of maintenance personnel is a direct enabler of this vision. By knowing precisely where operators are within a workshop at any given moment, it becomes possible to automate task assignment, optimize intervention routes, reduce response times, and ultimately feed data into broader smart factory management systems. This kind of human-in-the-loop awareness is a cornerstone of intelligent maintenance strategies such as predictive and assisted maintenance, both of which are central pillars of Industry 4.0.
+
+Our research project therefore sits at the intersection of indoor localization, human-machine interaction, and smart manufacturing. It contributes to the ongoing effort to equip industrial facilities with the situational awareness tools they need to operate more efficiently, safely, and autonomously in line with the goals of the Industry 4.0 initiative.
+
+ 
+\subsection{Problematic}
+
+Industrial workshops are often large, complex environments where equipment is spread across multiple zones, sometimes spanning several floors or buildings. When a maintenance alert is triggered, the technician must locate the faulty equipment as quickly as possible to minimize downtime. In practice, this navigation phase is rarely assisted the operator relies on paper maps, verbal instructions, or prior knowledge of the facility, all of which are error-prone and time-consuming.
+
+GPS, the most widespread outdoor localization technology, becomes unreliable or completely unavailable indoors due to signal attenuation caused by walls, metal structures, and machinery. No universal alternative has yet replaced it for indoor use. Existing solutions either require costly dedicated infrastructure, offer insufficient accuracy for workshop-scale navigation, or fail to perform consistently in electromagnetically noisy industrial environments.
+
+Furthermore, industrial workshops present specific challenges that make localization particularly difficult: highly reflective metal surfaces cause multipath interference in radio signals, moving machinery and personnel constantly alter the environment, and the density of obstacles makes purely map-based approaches fragile. These constraints rule out many solutions that perform well in office buildings or open spaces.
+
+The central question this project addresses is therefore: \textbf{how can we design a low-cost, robust localization system capable of guiding a maintenance operator reliably within an industrial workshop, without relying on GPS or heavy dedicated infrastructure?}
+
+
+ \subsection{Objectives}
+
+ The primary objective of this project is to design and prototype an indoor localization system adapted to industrial maintenance contexts. To achieve this, the work is organized around the following goals:
+
+\textbf{1. Survey and compare existing indoor localization approaches}, with a focus on WiSLAM, FootSLAM, and visual SLAM techniques, evaluating their respective accuracy, infrastructure requirements, and suitability for industrial environments.
+
+\textbf{2. Identify and select two complementary technologies or algorithms} that can be combined to improve localization robustness for instance, Wi-Fi fingerprinting paired with inertial dead-reckoning, or radio-based positioning enhanced with visual landmark detection.
+
+\textbf{3. Implement the two selected solutions} in a controlled environment representative of an industrial workshop, ensuring that both are functional and testable under realistic conditions.
+
+\textbf{4. Define a rigorous evaluation protocol} with quantitative and measurable criteria such as localization error in meters, update frequency, robustness to signal disruptions, and computational cost.
+
+\textbf{5. Compare the performance of both solutions} against the defined protocol and draw conclusions on which approach best meets the constraints of industrial maintenance scenarios.
+
+\textbf{6. Propose improvements or extensions} to the best-performing solution, considering future integration with augmented reality guidance systems or IoT-connected maintenance platforms.
+
+ 
+
+
+\section{Chapter 2 - Indoor Positioning System }
+
+
+\subsection{Introduction}
+An \textbf{indoor positioning system} (\textbf{IPS}) is a network of devices used to locate people or objects where GPS and other satellite technologies lack precision or fail entirely, such as inside multistory buildings, airports, alleys, parking garages, and underground locations.
+
+A large variety of techniques and devices are used to provide indoor positioning ranging from reconfigured devices already deployed such as smartphones, Wi-Fi and Bluetooth antennas, digital cameras, and clocks; to purpose built installations with relays and beacons strategically placed throughout a defined space. Lights, radio waves, magnetic fields, acoustic signals, and behavioral analytics are all used in IPS networks. IPS can achieve position accuracy of 2 cm,band beacons), magnetic positioning, dead reckoning They either actively locate mobile devices and tags or provide ambient location or environmental context for devices to get sensed. The localized nature of an IPS has resulted in design fragmentation, with systems making use of various optical, radio, or even acoustic technologies.
+
+IPS has broad applications in commercial, military, retail, and inventory tracking industries. There are several commercial systems on the market, but no standards for an IPS system. Instead each installation is tailored to spatial dimensions, building materials, accuracy needs, and budget constraints.
+
+For smoothing to compensate for stochastic (unpredictable) errors there must be a sound method for reducing the error budget significantly. The system might include information from other systems to cope for physical ambiguity and to enable error compensation. Detecting the device's orientation (often referred to as the \textbf{compass direction} in order to disambiguate it from smartphone vertical orientation) can be achieved either by detecting landmarks inside images taken in real time, or by using trilateration with beacons. There also exist technologies for detecting magnetometric information inside buildings or locations with steel structures or in iron ore mines.
+
+ 
+
+\subsection{Applicability and precision}
+
+Due to the signal attenuation caused by construction materials, the satellite based Global Positioning System (GPS) loses significant power indoors affecting the required coverage for receivers by at least four satellites. In addition, the multiple reflections at surfaces cause multi-path propagation serving for uncontrollable errors. These very same effects are degrading all known solutions for indoor locating which uses electromagnetic waves from indoor transmitters to indoor receivers. A bundle of physical and mathematical methods are applied to compensate for these problems. Promising direction radio frequency positioning error correction opened by the use of alternative sources of navigational information, such as inertial measurement unit (IMU), monocular camera Simultaneous localization and mapping (SLAM) and Wi-Fi SLAM. Integration of data from various navigation systems with different physical principles can increase the accuracy and robustness of the overall solution.
+
+The U.S. Global Positioning System (GPS) and other similar global navigation satellite systems (GNSS) are generally not suitable to establish indoor locations, since microwaves will be attenuated and scattered by roofs, walls and other objects. However, in order to make the positioning signals become ubiquitous, integration between GPS and indoor positioning can be made.
+
+Currently, GNSS receivers are becoming more and more sensitive due to increasing microchip processing power. High sensitivity GNSS receivers are able to receive satellite signals in most indoor environments and attempts to determine the 3D position indoors have been successful. Besides increasing the sensitivity of the receivers, the technique of A-GPS is used, where the almanac and other information are transferred through a mobile phone.
+
+However, despite the fact that proper coverage for the required four satellites to locate a receiver is not achieved with all current designs (2008–11) for indoor operations, GPS emulation has been deployed successfully in Stockholm metro. GPS coverage extension solutions have been able to provide zone-based positioning indoors, accessible with standard GPS chipsets like the ones used in smartphones.
+
+
+\subsection{Type of usages}
+
+
+\subsubsection{\textbf{Locating and positioning}}
+
+}While most current IPS are able to detect the location of an object, they are so coarse that they cannot be used to detect the \textit{orientation} or \textit{direction} of an object.
+
+
+\subsubsection{\textbf{Locating and tracking}}
+
+One of the methods to thrive for sufficient operational suitability is "tracking". Whether a sequence of locations determined form a trajectory from the first to the most actual location. Statistical methods then serve for smoothing the locations determined in a track resembling the physical capabilities of the object to move. This smoothing must be applied, when a target moves and also for a resident target, to compensate erratic measures. Otherwise the single resident location or even the followed trajectory would compose of an itinerant sequence of jumps.
+
+
+\subsubsection{\textbf{Identification and segregation}}
+
+}In most applications the population of targets is larger than just one. Hence the IPS must serve a proper specific identification for each observed target and must be capable to segregate and separate the targets individually within the group. An IPS must be able to identify the entities being tracked, despite the "non-interesting" neighbors. Depending on the design, either a sensor network must know from which tag it has received information, or a locating device must be able to identify the targets directly.
+
+ 
+\subsection{Wireless technologies}
+
+Any wireless technology can be used for locating. Many different systems take advantage of existing wireless infrastructure for indoor positioning. There are three primary system topology options for hardware and software configuration, network-based, terminal-based, and terminal-assisted. Positioning accuracy can be increased at the expense of wireless infrastructure equipment and installations.
+
+
+
+\subsubsection{\textbf{Wi-Fi-based positioning system (WPS)}}
+
+}\textit{Main article: Wi-Fi positioning system}\textit{Further information: Wi-Fi Round Trip Time}Wi-Fi positioning system (WPS) is used where GPS is inadequate. The localization technique used for positioning with wireless access points is based on measuring the intensity of the received signal (\textit{received signal strength} in English RSS) and the method of "fingerprinting".}} To increase the accuracy of fingerprinting methods, statistical post-processing techniques (like Gaussian process theory) can be applied, to transform discrete set of "fingerprints" to a continuous distribution of RSSI of each access point over entire location. Typical parameters useful to geolocate the Wi-Fi hotspot or wireless access point include the SSID and the MAC address of the access point. The accuracy depends on the number of positions that have been entered into the database. The possible signal fluctuations that may occur can increase errors and inaccuracies in the path of the user.}}
+
+
+\subsubsection{\textbf{Bluetooth}}
+
+}Originally, Bluetooth was concerned about proximity, not about exact location. Bluetooth was not intended to offer a pinned location like GPS, however is known as a geo-fence or micro-fence solution which makes it an indoor proximity solution, not an indoor positioning solution.
+
+Micromapping and indoor mapping has been linked to Bluetooth and to the Bluetooth LE based iBeacon promoted by Apple Inc. Large-scale indoor positioning system based on iBeacons has been implemented and applied in practice.
+
+Bluetooth speaker position and home networks can be used for broad reference.
+
+In 2021 Apple released their AirTags which allow a combination of Bluetooth and UWB technology to track Apple devices amongst the Find My network causing a surge of popularity for tracking technology.
+
+ 
+
+
+\section{Chapitre 3 - Study Results}
+
+In order to address the research question and achieve the objectives defined above, we conducted a systematic review of the existing scientific literature on indoor localization technologies, with a particular focus on approaches applicable to industrial environments. A total of seven articles were selected and analyzed, chosen for their relevance to the technical challenges identified in this project.
+
+The selected works cover a broad yet coherent spectrum of topics. Several studies focus on Wi-Fi-based localization methods, examining both classical fingerprinting approaches and more recent machine learning-enhanced techniques that improve positioning accuracy in signal-noisy environments. Others investigate pedestrian dead-reckoning systems based on inertial measurement units, including FootSLAM-type approaches that estimate operator displacement through step detection and heading estimation. 
+A number of articles also explore visual SLAM methods, which use camera feeds to simultaneously reconstruct the environment and track the user's position within it. Finally, some of the reviewed works address hybrid localization architectures that combine two or more of these modalities to compensate for their individual weaknesses and achieve greater robustness.
+
+Together, these seven contributions provide a solid foundation for understanding the current state of the art, identifying the most promising technical directions, and justifying the two solutions selected for implementation in this project.
+
+ 
+\end{itemize}
+
+\subsection{Article 1 : Indoor Wi-Fi Localization Using Machine Learning }
+
+\subsubsection{\textbf{General Information}}
+
+\textbf{Article Title:} Indoor Localization Based on Machine Learning: Exploiting Wi-Fi Channel State Information
+
+ \textbf{Author:} LOTFI BENCHARIF
+
+ \textbf{Publication Year:} December 2020
+
+ \textbf{Country / Institution:} Canada,Université du Québec à Trois-Rivières (UQTR), Laboratory of Signals and Integrated Systems (LSSI)
+
+ \textbf{Journal / Conference:} Master’s thesis (academic document, not published in a journal)
+
+ \textbf{Field / Topic:} Indoor localization, machine learning, Wi-Fi signal processing, RSS/CSI fingerprinting
+
+\subsubsection{\textbf{Context and Problem Statement}}
+
+\textbf{What problem is being studied?}
+
+ This study focuses on precise indoor localization in environments where GPS signals are unavailable. GPS is ineffective indoors due to physical obstacles that block or degrade satellite signals. The authors aim to exploit existing Wi-Fi signals within buildings to estimate a user’s position.
+
+\textbf{Why is this problem important?}
+
+ This problem is important because many modern applications require accurate indoor positioning: navigation in hospitals and shopping malls, elderly monitoring, industrial automation, and smart home systems. The accuracy and reliability of these systems directly determine their practical usefulness.
+
+\textbf{What is the study context?}
+
+ The context is both scientific and practical. The growth of IoT is creating increasing demand for indoor localization services. The research is conducted in a Canadian university laboratory, with experiments carried out in two real environments: a university lab and a residential house.
+
+\subsubsection{\textbf{Objectives of the Article}}
+
+\textbf{Main objective:}
+
+ To design and evaluate an indoor Wi-Fi localization system by treating localization as a machine learning classification problem, using RSS and CSI measurements.
+
+\textbf{Secondary objectives:}
+
+\begin{itemize}
+    \item Collect RSS and CSI data in two different environments (university and home) 
+    \item Compare the performance of several ML algorithms: LSTM, quadratic SVM, kNN, weighted kNN, decision tree, ensemble classifier, optimized SVM 
+    \item Identify the method that provides the best classification accuracy 
+    \item Evaluate the robustness of algorithms in environments with varying obstacles 
+\end{itemize}
+ 
+
+\subsubsection{\textbf{Hypotheses / Research Questions}}
+
+\textbf{What questions are being asked?}
+
+\begin{itemize}
+    \item Can Wi-Fi RSS and CSI signals accurately localize a user indoors? 
+    \item Does deep learning (LSTM) outperform classical ML methods (KNN, SVM, decision tree) for this problem? 
+    \item Are the performances stable across different environments (laboratory vs home)? 
+    \item Does CSI provide a significant advantage over RSS alone? 
+\end{itemize}
+\textbf{Are there hypotheses to validate?}
+
+\begin{itemize}
+    \item The authors assume that each reference point has a unique RSS/CSI fingerprint that distinguishes it from others 
+    \item They assume that LSTM, thanks to its temporal memory, better captures signal variations than static methods like KNN 
+\end{itemize}
+
+
+\subsubsection{\textbf{Methodology}}
+
+\textbf{Type of study:}
+
+ Quantitative experimental study with performance comparison between multiple machine learning models
+
+\textbf{Data used:}
+
+\begin{itemize}
+    \item \textbf{Source:} Manual collection in two real environments 
+    \item \textbf{Scenario 1:} LSSI Laboratory, UQTR ; area of 8.37 m × 7.44 m ; 21 reference points (15 in the room and  7 in the corridor) 
+    \item \textbf{Scenario 2:} Residential house ; 15 reference points across 5 rooms 
+    \item \textbf{Size:} 2,700 packets per class, totaling 56,700 packets for scenario 1 and 40,500 for scenario 2 
+    \item \textbf{Nature:} RSS vectors (signal strength) and CSI (channel state information, complex amplitude with 180 dimensions = 2 antennas × 3 receivers × 30 subcarriers) 
+\end{itemize}
+\textbf{Tools / technologies / algorithms used:}
+
+\begin{table}
+\centering
+
+\begin{tabular}{| l | l |}
+\hline
+Equipment & Details \\
+\hline
+\textbf{Access Point} & TP-Link Archer C5 V2.0,dual-band AC1200 \\
+\hline
+\textbf{Receiver} & Intel NIC5300 card,3 receiving antennas \\
+\hline
+\textbf{Processor} & Intel Xeon E5-2620 v3, 32 GB RAM, Nvidia RTX 2080Ti GPU \\
+\hline
+\textbf{Software} & MATLAB \\
+\hline
+Algorithms Compared & \textbf{Type} \\
+\hline
+\textbf{LSTM} & Deep learning \\
+\hline
+\textbf{Quadratic SVM} & Support Vector Machine \\
+\hline
+\textbf{Optimizable SVM} & Optimized Support Vector Machine \\
+\hline
+\textbf{kNN} & K-Nearest Neighbors \\
+\hline
+\textbf{Weighted kNN} & Weighted K-Nearest Neighbors \\
+\hline
+\textbf{Decision Tree} & Fine Tree \\
+\hline
+\textbf{Ensemble Classifier} & Ensemble learning \\
+\hline
+
+\end{tabular}
+
+\end{table}
+
+\textbf{Procedure,main steps:}
+
+\begin{enumerate}
+    \item Install Wi-Fi access point in the test area 
+    \item Collect raw RSS and CSI data at reference points (offline phase) 
+    \item Preprocessing: CSI normalization, feature extraction, concatenation into 180-dimensional vectors 
+    \item Data organization: 80\% training / 20\% validation 
+    \item Train each model with hyperparameter optimization 
+    \item Evaluate performance using confusion matrices and ROC/AUC curves 
+    \item Compare results between the two scenarios 
+\end{enumerate}
+
+\subsubsection{\textbf{Main Results}}
+
+\textbf{Obtained results and key figures:}
+
+\begin{table}
+\centering
+
+\begin{tabular}{| l | l | l |}
+\hline
+Algorithm & Scenario 1 (University) & Scenario 2 (Home) \\
+\hline
+\textbf{LSTM} & 97.90\% & 98.23\% \\
+\hline
+\textbf{Optimized SVM} & 97.30\% & 96.70\% \\
+\hline
+\textbf{Weighted kNN} & 95.80\% & 97.50\% \\
+\hline
+\textbf{Quadratic SVM} & 92.60\% & 92.60\% \\
+\hline
+\textbf{kNN} & 87.60\% &,\\
+\hline
+\textbf{Decision Tree} & 35.20\% &,\\
+\hline
+\textbf{Ensemble Classifier} & 22.70\% & 22.70\% \\
+\hline
+
+\end{tabular}
+
+\end{table}
+
+\textbf{Performance compared to literature:}
+
+\begin{table}
+\centering
+
+\begin{tabular}{| l | l |}
+\hline
+Method (literature) & Accuracy \\
+\hline
+\textbf{CNN (other study)} & 99.98\% \\
+\hline
+\textbf{MLP (other study)} & 99.93\% \\
+\hline
+\textbf{LSTM (other study)} & 90.50\% \\
+\hline
+\textbf{SVM (other study)} & 82.50\% \\
+\hline
+\textbf{Our LSTM} & 98.23\% \\
+\hline
+
+\end{tabular}
+
+\end{table}
+
+AUC curves confirm these results: LSTM and optimized SVM reach AUC = 1.00 in the home scenario, while decision tree and ensemble classifier reach only 0.63 and 0.60 respectively.
+
+\subsubsection{\textbf{Analysis and Discussion}}
+
+\textbf{Interpretation of results:}
+
+ LSTM clearly outperforms classical methods due to its ability to model temporal dependencies in signal sequences. Methods like decision trees and ensemble classifiers fail because they do not capture the sequential and continuous nature of Wi-Fi data.
+
+\textbf{Strengths of the approach:}
+
+\begin{itemize}
+    \item Combined use of RSS and CSI, providing more information than RSS alone 
+    \item Validation in two very different real environments, increasing robustness 
+    \item Rigorous comparison of 7 algorithms on the same dataset 
+    \item Reproducible results due to detailed hyperparameter descriptions 
+\end{itemize}
+\textbf{Limitations of the study:}
+
+\begin{itemize}
+    \item Environments had low obstacle density (pandemic conditions, few people present) 
+    \item Offline data collection phase is time-consuming and must be repeated if the environment changes 
+    \item Only CSI amplitude is used; phase information is ignored 
+    \item System not tested in industrial environments with strong electromagnetic interference 
+\end{itemize}
+\textbf{Comparison with other works:}
+
+ The authors outperform LSTM and HMM approaches from the literature (90.5\% and 73.3\%) thanks to the use of CSI in addition to RSS. However, they remain slightly below state-of-the-art CNN models (99.98\%), but with a simpler deployment approach.
+
+\subsubsection{\textbf{Contribution of the Article}}
+
+\textbf{What this article brings:}
+
+\begin{itemize}
+    \item A comprehensive experimental comparison of 7 ML methods on real RSS and CSI data across two environments 
+    \item Demonstration that LSTM consistently outperforms classical ML methods for this problem 
+    \item A complete and reproducible methodology for Wi-Fi data collection, preprocessing, and classification 
+\end{itemize}
+\textbf{Innovation:}
+
+ Combining RSS and CSI into a unified input vector for classification algorithms, with an LSTM architecture optimized through systematic hyperparameter tuning.
+
+\subsubsection{\textbf{Limitations and Perspectives}}
+
+\textbf{Limitations identified by the authors:}
+
+\begin{itemize}
+    \item CSI phase is not used, only amplitude 
+    \item System is not robust in dynamic environments (moving people, furniture changes) 
+    \item Localization error in meters is not computed, only classification accuracy 
+\end{itemize}
+\textbf{Future work proposed:}
+
+\begin{itemize}
+    \item Integrate CSI phase along with amplitude to improve accuracy 
+    \item Test system stability in dynamic environments 
+    \item Develop a method to compute localization error in meters 
+    \item Explore other deep learning architectures to reduce training time 
+
+\end{itemize}
+\textbf{Possible improvements:}
+
+\begin{itemize}
+    \item Fuse Wi-Fi data with inertial sensors (IMU) to improve accuracy when signals degrade 
+    \item Automate offline data collection using robots or crowdsourcing 
+    \item Adapt the system to industrial environments with more metallic obstacles 
+\end{itemize}
+ 
+
+\subsubsection{\textbf{Link with Our Project}}
+
+\textbf{How is this article useful for our project?}
+
+ This article provides a solid foundation on Wi-Fi fingerprinting using RSS, which is a core technology in WiSLAM. It shows how signal strength measurements can be algorithmically exploited to estimate position, which aligns with the Wi-Fi component of WiSLAM.
+
+\textbf{What ideas can we reuse?}
+
+\begin{itemize}
+    \item The two-phase methodology (offline / online) is directly applicable 
+    \item Evaluation metrics (classification accuracy, AUC, confusion matrix) can be reused 
+    \item The RSS data collection protocol at reference points can serve as a basis for building a Wi-Fi radio map 
+\end{itemize}
+\textbf{What gaps can our project fill?}
+
+\begin{itemize}
+    \item This article focuses only on Wi-Fi, without inertial sensors. Our WiSLAM project addresses this by combining Wi-Fi and IMU 
+    \item The article does not address industrial environments; our project introduces this real-world constraint 
+    \item The article does not include simultaneous mapping (SLAM); our approach adds real-time radio map construction 
+\end{itemize}
+
+\subsection{Article 2 : Overview of WiFi fingerprinting-based indoor positioning }
+
+\textbf{3.2.1   General Information}
+
+\begin{itemize}
+    \item \textbf{Article Title:} Overview of WiFi Fingerprinting-Based Indoor Positioning 
+    \item \textbf{Authors:} Shuang Shang and Lixing Wang 
+    \item \textbf{Publication Date:} March 4, 2022 
+    \item \textbf{Country / Institution:} China / School of Computer Science \& Engineering, Northeastern University (Shenyang) 
+    \item \textbf{Journal / Conference:} IET Communications (Wiley) 
+    \item \textbf{Field / Topic:} Indoor positioning, WiFi fingerprinting, machine learning
+
+
+
+\end{itemize}
+ \textbf{3.2.2  Context and Problem Statement}
+
+\begin{itemize}
+    \item \textbf{What problem is being studied?}
+ This study examines the inefficiency of GPS in indoor environments. Satellite signals are blocked or attenuated by walls and obstacles. Indoors, WiFi signals experience fluctuations (noise, multipath effects, non-line-of-sight (NLOS) conditions), making localization difficult. 
+
+    \item \textbf{Why is this problem important?}
+ This problem is important because, with Industry 4.0 and the Internet of Things era, the demand for location-based services is rapidly increasing for both social and commercial purposes. 
+
+    \item \textbf{What is the context of the study?}
+ The study is set in both a scientific and industrial context. It aims to improve the accuracy and robustness of localization systems without adding hardware costs, by using existing WiFi infrastructure. 
+
+\end{itemize}
+ \textbf{3.2.3  Objectives of the Article}
+
+\begin{itemize}
+    \item \textbf{Main objective:}
+ To provide a comprehensive overview of indoor localization technologies, with a specific focus on WiFi fingerprinting methods combined with machine learning. 
+
+    \item \textbf{Secondary objectives:} 
+    \begin{itemize}
+        \item Compare WiFi with other technologies (UWB, Bluetooth, RFID, etc.) 
+        \item Analyze the advantages and disadvantages of different machine learning algorithms (KNN, SVM, Random Forest, Deep Learning) 
+        \item Identify current challenges and future research directions 
+
+    \end{itemize}
+\end{itemize}
+ \textbf{3.2.4  Hypotheses and Research Questions}
+
+\begin{itemize}
+    \item \textbf{What questions are being asked?} 
+    \begin{itemize}
+        \item What is the most suitable technology for low-cost, large-scale deployment? 
+        \item How can machine learning algorithms compensate for RSSI signal instability? 
+
+
+    \end{itemize}
+    \item \textbf{Hypotheses:}
+ WiFi fingerprinting is one of the most viable solutions because it does not require additional hardware and is not limited by line-of-sight (NLOS) constraints, unlike geometric methods (trilateration).
+
+
+
+\end{itemize}
+ \textbf{3.2.5  Methodology}
+
+\begin{itemize}
+    \item \textbf{Type of study:}
+ Review study and bibliometric analysis. The authors analyze publication trends from 2011 to 2020. 
+
+    \item \textbf{Data used:}
+ Analysis of scientific databases (Web of Science) to assess technology popularity. References to well-known systems such as RADAR and LANDMARC. 
+
+    \item \textbf{Tools / Technologies / Algorithms analyzed:} 
+
+    \begin{itemize}
+        \item \textbf{Technologies:} Ultrasound, RFID, UWB, Bluetooth, Infrared, Zigbee, WiFi 
+
+        \item \textbf{Machine Learning Algorithms:} 
+        \begin{itemize}
+            \item KNN / WKNN: for proximity-based classification 
+            \item K-Means / DBSCAN: for clustering and noise handling 
+            \item SVM / SVR: for classification and regression 
+            \item Random Forest: for stability on large datasets 
+            \item Deep Learning (CNN, SAE, DNN): for complex feature extraction.
+
+
+
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+ \textbf{3.2.6  Main Results}
+
+\begin{itemize}
+    \item \textbf{Results obtained:}
+ The article shows that WiFi fingerprinting is the most mature method for deployment without additional hardware cost. It identifies machine learning algorithms as the best tools for transforming unstable WiFi signals into accurate positions. 
+
+    \item \textbf{Key figures:} 
+    \begin{itemize}
+        \item Publications on WiFi dominated the field between 2011 and 2020 (peak in 2018 with 244 major papers) 
+        \item WiFi fingerprinting accounts for nearly 50\% of overall WiFi localization research 
+        \item Reported accuracy for some hybrid methods: 1.69 m (using Random Forest) and up to 98.75\% success rate for floor detection (using SVM) 
+
+
+
+    \end{itemize}
+    \item \textbf{Performance and comparisons:}
+ The article includes a comparison table showing that UWB is the most accurate (centimeter-level), but WiFi offers the best balance in terms of cost, ease of deployment, and accuracy (meter-level). 
+
+
+\end{itemize}
+ \textbf{3.2.7 Analysis and Discussion}
+
+\begin{itemize}
+    \item \textbf{Interpretation of results:}
+ The authors conclude that deep learning outperforms classical methods (such as KNN) because it can extract hidden signal features, especially in complex environments. 
+
+    \item \textbf{Strengths of the approach:}
+ The article provides a very comprehensive analysis of the software (ML) aspect and offers a clear classification of error types (multipath, noise, electromagnetic interference). 
+
+    \item \textbf{Limitations of the study:}
+ The article remains largely theoretical and gives limited attention to the hardware aspect (e.g., smartphone sensors), focusing instead on network signal analysis. 
+
+    \item \textbf{Comparison with other works:}
+ It stands out from other surveys by focusing specifically on fingerprinting and machine learning, whereas others focus mainly on wave propagation physics. 
+
+
+
+
+
+\end{itemize}
+ \textbf{3.2.8    Contribution of the Article}
+ 
+\begin{itemize}
+    \item \textbf{What does this article contribute?}
+ It provides a post–Industry 4.0 (2022) update on the state of the art in indoor localization, integrating recent algorithms such as convolutional neural networks (CNN) applied to WiFi.
+
+    \item \textbf{Innovation:}
+ A clear classification of machine learning algorithms based on their use: clustering for speed, SVM for classification, and deep learning for accuracy. 
+
+
+\end{itemize}
+\textbf{3.2.9      Limitations and Future Work}
+
+\begin{itemize}
+    \item \textbf{Limitations identified by the authors:} 
+    \begin{itemize}
+        \item Data collection (offline phase) remains too time-consuming and labor-intensive 
+        \item High energy consumption of complex algorithms on smartphones 
+
+
+
+    \end{itemize}
+    \item \textbf{Future directions:}
+ Move toward self-learning systems that do not require manual data collection, which aligns with our WiSLAM topic. 
+
+    \item \textbf{Possible improvements:}
+Integrate more sensors (sensor fusion) to reduce dependence on WiFi signals alone.
+
+
+\end{itemize}
+
+\textbf{3.2.10    Link with Our Project}
+\begin{itemize}
+    \item \textbf{How is this article useful?}
+ It provides scientific justification for choosing WiFi (existing infrastructure, widespread availability in industrial environments). 
+
+    \item \textbf{What ideas can be reused?} 
+    \begin{itemize}
+        \item The two-phase process structure (offline/online) 
+        \item The use of machine learning to handle signal noise in an industrial environment 
+
+    \end{itemize}
+    \item \textbf{What gaps can our project fill?}
+ The article does not address fusion with visual data (SLAM). Our project goes further by integrating this hybrid approach to compensate for WiFi instability described in the article. 
+\end{itemize}
+
+
+
+\subsection{Article 3 : Indoor Trilateration Technique\textbf{ }
+}
+
+\textbf{3.3.1    General Information}
+
+\textbf{Title:} Technique de trilatération pour la localisation Indoor \textit{(Trilateration Technique for Indoor Localization)}
+
+\textbf{Authors:} Tian Yang, Adnane Cabani, Houcine Chafouk
+
+\textbf{Year of Publication:} 2021 (submitted to HAL in March 2022)
+
+\textbf{Country / Institution:} France,Normandie Université, UNIROUEN, ESIGELEC, IRSEEM, Rouen
+
+\textbf{Journal / Conference:} Colloque sur les Objets et systèmes Connectés,COC'2021, IUT d'Aix-Marseille, Marseille, France
+
+\textbf{Field / Theme:} Indoor localization, trilateration, RSSI, IoT
+
+ \textbf{3.3.2   Context and Problem Statement}
+
+\textbf{Problem studied:} How to determine the position of a mobile receiver indoors using Wi-Fi signals (RSSI) through the trilateration technique, in both 2D and 3D.
+
+\textbf{Why is this problem important?} GPS is inoperative indoors. Indoor localization is a growing need in connected environments (smart buildings, industry, healthcare). Alternative methods that are accurate and low-cost are therefore necessary.
+
+\textbf{Context:} Scientific and technological, within the IoT (Internet of Things / Internet of Everything) framework. The context is academic, with a MATLAB simulation as a proof of concept.
+
+ \textbf{3.3.3       Objectives of the Article}
+
+\textbf{Main objective:} Present and illustrate the principle of trilateration for Wi-Fi RSSI-based indoor localization, in both 2D and 3D.
+
+\textbf{Secondary objectives:}
+
+\begin{itemize}
+    \item Simulate 2D trilateration in MATLAB using real RSSI data
+    \item Review existing methods (kNN, machine learning, recurrent neural networks)
+    \item Lay the groundwork for a future dynamic 3D solution following the trajectory of a mobile receiver
+
+
+\end{itemize}
+ \textbf{3.3.4      Hypotheses / Research Questions}
+
+\textbf{Questions raised:}
+
+\begin{itemize}
+    \item Can trilateration from RSSI provide sufficiently accurate position estimation?
+    \item How to handle calculation errors in the real case where the three circles do not intersect at a single point?
+    \item How to extend the 2D approach to a dynamic 3D model?
+\end{itemize}
+\textbf{Hypotheses:}
+
+\begin{itemize}
+    \item Distances between the receiver and access points (APs) can be estimated from RSSI values using the Shannon-Hartley formula
+    \item In the ideal 2D case, three circles intersect at a single point, giving a unique solution
+    \item In 3D, three spheres yield two possible solutions, requiring additional resolution
+
+
+\end{itemize}
+ \textbf{3.3.5   Methodology}
+
+\textbf{Type of study:} Experimental and theoretical,MATLAB simulation based on synthetic RSSI data
+
+\textbf{Data used:}
+
+\begin{itemize}
+    \item Source: MATLAB simulation
+    \item Nature: RSSI values measured in dB (4 values: \{8.3520, 7.9761, 9.8127, 31.7533\} dB)
+    \item 4 Wi-Fi access points (2.4 GHz) at coordinates (0,0), (10,0), (0,10), (10,10)
+    \item Actual receiver position: (3, 4.5)
+\end{itemize}
+\textbf{Tools / Technologies / Algorithms:}
+
+\begin{itemize}
+    \item MATLAB (simulation)
+    \item Shannon-Hartley equation (RSSI,distance conversion)
+    \item Geometric trilateration algorithm (circle intersection in 2D)
+    \item Review of: kNN, SVMand  deep learning, recurrent neural networks (RNN), dead reckoning, isolation forest
+\end{itemize}
+\textbf{Procedure (main steps):}
+
+\begin{enumerate}
+    \item Definition of AP coordinates and actual receiver position
+    \item Reception of RSSI values by the receiver
+    \item Calculation of AP–receiver distances via the inverse Shannon-Hartley formula
+    \item Application of the trilateration algorithm (intersection of three circles)
+    \item Estimation of the calculated position and comparison with the actual position
+    \item Graphical visualization in MATLAB
+
+
+\end{enumerate}
+ \textbf{3.3.6      Main Results}
+
+\textbf{Results obtained:} The position estimated by the algorithm is \textbf{(3.8789, 5.0022)} for an actual position of \textbf{(3, 4.5)}.
+
+\textbf{Key numerical data:}
+
+\begin{itemize}
+    \item Error in X: ≈ 0.88 m
+    \item Error in Y: ≈ 0.50 m
+    \item Euclidean distance of the error: ≈ 1.02 m (estimated)
+\end{itemize}
+\textbf{Performance / Comparisons:} The article does not provide a formal RMSE for this simulation. It mentions that RMSE will be used in future work to validate accuracy. State-of-the-art works cited report variable precision depending on the method (kNN, deep learning, RNN), with no direct benchmark in this article.
+
+
+ \textbf{3.3.7      Analysis and Discussion}
+
+\textbf{Interpretation of results:} The estimation is relatively close to the actual position for a simplified model. The residual error is due to RSSI measurement noise, an unavoidable phenomenon in a real environment.
+
+\textbf{Strengths:}
+
+\begin{itemize}
+    \item Simple, low-cost approach exploiting existing Wi-Fi infrastructure
+    \item Clear presentation of the geometric principle in 2D and 3D
+    \item Good synthesis of the state of the art in indoor localization methods
+\end{itemize}
+\textbf{Limitations:}
+
+\begin{itemize}
+    \item Simulation only,no testing in a real environment
+    \item No consideration of interference, multipath, or obstacles
+    \item 3D model not implemented, only described theoretically
+    \item No rigorous quantitative evaluation (no RMSE computed)
+    \item Short article (conference communication),limited experimental depth
+\end{itemize}
+\textbf{Comparison with other works:} The article positions trilateration as a baseline method compared to hybrid approaches (kNNand  deep learning, RNN) that improve accuracy but increase complexity.
+
+ \textbf{3.3.8      Contribution of the Article}
+
+\textbf{What this article brings new:}
+
+\begin{itemize}
+    \item A pedagogical and synthetic presentation of the 2D/3D trilateration principle based on RSSI
+    \item An operational MATLAB simulation illustrating position calculation by circle intersection
+\end{itemize}
+\textbf{Innovation:} Rather a synthesis and illustrative implementation contribution than a major algorithmic innovation. The value lies in the clarity of the principle's exposition and the projection toward a future dynamic 3D trajectory-based system.
+
+ \textbf{3.3.9   Limitations and Perspectives}
+
+\textbf{Limitations acknowledged by the authors:}
+
+\begin{itemize}
+    \item No testing under real conditions (noisy signals, obstacles, multipath)
+    \item 3D model not yet implemented
+\end{itemize}
+\textbf{Proposed perspectives:}
+
+\begin{itemize}
+    \item Development of a dynamic 3D solution following the receiver's trajectory
+    \item Consideration of RSSI signal loss
+    \item Collection of RSSI data via the receiver's Wi-Fi card along a pre-programmed trajectory
+    \item Update of the calculated position at each time step
+\end{itemize}
+\textbf{Possible improvements:}
+
+\begin{itemize}
+    \item Integration of a filter (Kalman, particle) to reduce RSSI noise
+    \item Testing on a real mobile robot or tablet
+    \item Coupling with an IMU for dead reckoning
+
+\end{itemize}
+ \textbf{3.3.10      Relevance to our Project}
+
+\textbf{How this article is useful:}
+
+\begin{itemize}
+    \item It provides the mathematical foundations of Wi-Fi trilateration (RSSI,  distance, position), which is a core building block of the WiSLAM component of our project
+    \item It concretely illustrates how to position a user from existing Wi-Fi infrastructure, without additional hardware which exactly matches our constraint of reusing available Wi-Fi signals in the industrial environment
+\end{itemize}
+\textbf{Reusable ideas:}
+
+\begin{itemize}
+    \item The RSSI-to-distance calculation model via Shannon-Hartley
+    \item The circle/sphere intersection logic for position estimation
+    \item The mathematical formulation of the 3D problem (to be extended in our project)
+\end{itemize}
+\textbf{Gaps our project could fill:}
+
+\begin{itemize}
+    \item This article does not address real-time guidance or a user interface on a tablet
+    \item It does not fuse Wi-Fi localization with vision (camera), which our hybrid WiSLAMand  visual SLAM approach provides
+    \item No consideration of the continuous movement of a human operator in an industrial environment
+\end{itemize}
+ 
+\subsection{Article 4 :  IMU/Wi-Fi Fusion with Particle Filter\textbf{ }
+}
+
+\textbf{3.4.1 General Information}
+
+\textbf{Title:} An improved indoor positioning based on crowd-sensing data fusion and particle filter
+
+\textbf{Authors:} Ahmed Gamal Abdellatif, Amgad A. Salama, Hamed S. Zied, Adham A. Elmahallawy, Mahmoud A. Shawky
+
+\textbf{Year of Publication:} 2023 (received: May 29, 2023; accepted: November 3, 2023; online: November 7, 2023)
+
+\textbf{Country / Institution:}
+
+\begin{itemize}
+    \item Egypt,Air Defence Collage (Alexandria \& Cairo)
+    \item Egypt,Higher Institute of Engineering and Technology, King Mariout, Alexandria
+    \item United Kingdom,James Watt School of Engineering, University of Glasgow
+\end{itemize}
+\textbf{Journal / Conference:} \textit{Physical Communication}, Volume 61, 2023, article 102225,Elsevier (peer-reviewed journal, open access CC BY)
+
+\textbf{Field / Theme:} Indoor localization, data fusion, particle filter, Wi-Fi fingerprinting, IMU, PDR, UWB
+
+ \textbf{3.4.2 Context and Problem Statement}
+
+\textbf{Problem studied:} Accurate, reliable, and low-cost indoor localization is challenging due to the absence of GPS signals indoors, interference, noise, and the cumulative drift of inertial sensors (IMU).
+
+\textbf{Why is this problem important?} Indoor localization is critical for numerous applications: asset tracking, smart buildings, hospitals, shopping centers, industry, and IoT. A single sensor is insufficient,cumulative errors rapidly degrade accuracy.
+
+\textbf{Context:} Scientific and technological, with experimental demonstration in a real environment (corridors of a university in Italy). The work is supported by the Egyptian Ministry of Defence.
+
+ \textbf{3.4.3   Objectives of the Article}
+
+\textbf{Main objective:} Propose an improved, low-cost, reliable, and highly accurate indoor localization system combining crowd-sensing, multi-sensor data fusion (IMUand  Wi-Fi RSSand  magnetic field) and a particle filter.
+
+\textbf{Secondary objectives:}
+
+\begin{itemize}
+    \item Evaluate and compare various indoor localization techniques (RSSI, CSI, AoA, ToF, TDoA, RToF, PoA, fingerprinting)
+    \item Build a magnetic fingerprinting database for the test area
+    \item Use UWBand  trilateration as a reference trajectory to validate results
+    \item Demonstrate improved accuracy over IMU-only and IMU+fingerprinting without particle filter approaches
+
+
+
+
+\end{itemize}
+ \textbf{3.4.4   Hypotheses / Research Questions}
+
+\textbf{Questions raised:}
+\begin{itemize}
+    \item Does the fusion of IMUand  Wi-Fi RSSand  magnetic field through a particle filter achieve significantly higher accuracy than single-sensor approaches?
+    \item Does crowd-sensing (data collection through multiple passes) improve the quality of the fingerprinting database?
+    \item Is the trajectory estimated by the particle filter comparable to the UWB reference trajectory obtained by trilateration?
+
+
+\end{itemize}
+\textbf{Hypotheses:}
+\begin{itemize}
+    \item Combining multiple data sources compensates for the individual weaknesses of each sensor
+    \item The particle filter, capable of handling non-Gaussian and non-linear processes, is better suited than the Kalman filter in this context
+    \item The temporal stability of the magnetic field makes it a reliable reference for assisted localization
+
+
+
+\end{itemize}
+ \textbf{3.4.5 Methodology}
+
+\textbf{Type of study:} Experimental,real-world tests in two corridors on the 2nd floor of a building at the University of Padua, Italy
+
+\textbf{Data used:}
+\begin{itemize}
+    \item Source: on-site data collection (University of Padua, CIRGEO lab)
+    \item Area: two corridors (\~40 m × \~12 m)
+    \item 11 Pozyx UWB devices (anchors and rovers)
+    \item 18 Wi-Fi access points
+    \item IMU embedded in an LG Android smartphone (accelerometer, gyroscope, magnetometer)
+    \item IMU sampling frequency: 100–200 Hz
+    \item 3 movement tracks (center, left, right), 16 sub-tracks in total
+
+
+\end{itemize}
+\textbf{Tools / Technologies / Algorithms:}
+\begin{itemize}
+    \item PDR (Pedestrian Dead Reckoning): step detection, step length estimation, direction estimation
+    \item Wi-Fi fingerprinting (offline and online phases)
+    \item Particle Filter (PF) with 1000 particles: initialization, prediction, update, resampling
+    \item UWB trilateration for reference trajectory
+    \item Mutual information method for trajectory comparison
+    \item MATLAB (preprocessing and simulation)
+    \item Radio propagation model: P\_t\^i = P\_0 − 10η·log10(d\_t\^i/d\_0), with η ∈ [1.5; 7.2]
+
+
+
+\end{itemize}
+\textbf{Procedure (main steps):}
+\begin{enumerate}
+    \item Offline phase: collection of RSS and magnetic field data on the 3 tracks, then construction of the fingerprinting database
+    \item Real-time collection: IMUand  Wi-Fi RSSand  UWB measurements during movement
+    \item Synchronization and fusion of data (IMUand  Wi-Fiand  magnetometer)
+    \item Application of the particle filter (4 steps: initialization, prediction, update, resampling)
+    \item Calculation of the reference trajectory by UWB trilateration
+    \item Comparison of estimated trajectory (PF) vs. reference trajectory (UWB) via mutual information
+    \item Quantitative evaluation (enhanced accuracy, average error)
+
+
+
+
+\end{enumerate}
+ \textbf{3.4.6 Main Results}
+
+\textbf{Results obtained:}
+\begin{table}
+\centering
+
+\begin{tabular}{l l l}
+\textbf{Algorithm} & \textbf{Enhanced Accuracy} & \textbf{Average Error} \\
+\hline
+\textbf{IMUand  PDR (without magnetic fingerprinting database)} & 80.49\% & 0.3 m \\
+\hline
+\textbf{IMU and  PDR and  magnetic fingerprinting database} & 85.86\% & 0.32 m \\
+\hline
+\textbf{Proposed method (PF, n=1000 and  fingerprinting)} & \textbf{96.32\%} & \textbf{0.359 m} \\
+\hline
+
+\end{tabular}
+
+\end{table}
+
+\textbf{Key numerical data:}
+\begin{itemize}
+    \item Accuracy improvement: from 80.49\% to 96.32\%, i.e., and 15.83 percentage points
+    \item The average error slightly increases with the proposed method (0.359 m vs. 0.3 m), reflecting an accuracy/error trade-off
+    \item Test area: corridors of 40 m and  12 m with 11 UWBs and 18 Wi-Fi APs
+
+\end{itemize}
+\textbf{Performance / Comparisons:}
+
+\begin{itemize}
+    \item The proposed method significantly outperforms both baseline methods in terms of overall accuracy
+    \item The slight increase in average error is accepted in exchange for much better localization accuracy
+
+
+\end{itemize}
+ \textbf{3.4.7 Analysis and Discussion}
+
+\textbf{Interpretation of results:} The integration of the particle filter with 1000 particles better covers the space of probable positions and corrects IMU drift through continuous updates from the magnetic fingerprinting database. Crowd-sensing (multiple passes) enriches the database and improves robustness.
+
+\textbf{Strengths:}
+
+\begin{itemize}
+    \item Complete, low-cost system (standard smartphone and  existing Wi-Fi infrastructure)
+    \item Rigorous experimental validation with UWB reference trajectory
+    \item Robust multi-sensor approach compensating for individual sensor weaknesses
+    \item Exhaustive comparison of indoor localization techniques (Tables 2 and 3)
+\end{itemize}
+\textbf{Limitations:}
+
+\begin{itemize}
+    \item Slight increase in average error with the proposed method
+    \item Synchronizing Wi-Fi APs with particles is complex and presents a temporal granularity challenge
+    \item Tests in only one type of environment (university corridors), generalization not proven
+    \item The fingerprinting database must be rebuilt if the environment changes
+\end{itemize}
+\textbf{Comparison with other works:} The method outperforms IMU-only and IMU+fingerprinting without particle filter approaches. It is consistent with the literature on the advantage of multi-sensor fusion approaches.
+
+ \textbf{3.4.8   Contribution of the Article}
+
+\textbf{What this article brings new:}
+
+\begin{itemize}
+    \item A complete, low-cost hybrid indoor localization system combining crowd-sensing, PDR, magnetic fingerprinting, and particle filter
+    \item A validation methodology using UWB trilateration as a ground-truth reference
+\end{itemize}
+\textbf{Innovation:}
+
+\begin{itemize}
+    \item Use of crowd-sensing (multiple passes) to incrementally build a fingerprinting database without dedicated infrastructure (infrastructure-free approach)
+    \item Novel combination of these four components in a coherent pipeline with UWB validation
+\end{itemize}
+ \textbf{3.4.9   Limitations and Perspectives}
+
+\textbf{Limitations acknowledged by the authors:}
+
+\begin{itemize}
+    \item Slight increase in average error for the proposed method
+    \item Difficult synchronization of APs with particles at high granularity
+    \item Tests limited to a single environment
+\end{itemize}
+\textbf{Proposed perspectives:}
+
+\begin{itemize}
+    \item Extension to other environments (industrial buildings, hospitals...)
+    \item Improvement of temporal synchronization accuracy
+    \item Reduction of the fingerprinting database reconfiguration burden upon environment changes
+\end{itemize}
+\textbf{Possible improvements:}
+
+\begin{itemize}
+    \item Integration of vision (camera) as an additional localization source
+    \item Application on an industrial tablet for maintenance use cases
+    \item Reduction of the number of particles while maintaining accuracy (real-time optimization)
+\end{itemize}
+ \textbf{3.4.10     Relevance to our Project}
+
+\textbf{How this article is useful:}
+
+\begin{itemize}
+    \item It demonstrates that a hybrid Wi-Fi and  IMU and  particle filter system achieves 96.32\% accuracy, validating the hybrid approach you wish to adopt
+    \item The data fusion pipeline (IMU and  Wi-Fi and  magnetic field,PF) is directly applicable to the WiSLAM component of our project
+    \item The use of existing Wi-Fi infrastructure without hardware reconfiguration is consistent with our industrial context
+\end{itemize}
+\textbf{Reusable ideas:}
+
+\begin{itemize}
+    \item The PDR and  fingerprinting and  particle filter architecture as the Wi-Fi localization backbone
+    \item The use of the magnetic field as complementary calibration data
+    \item Reference trajectory validation (to be adapted: in our project, the camera/visual SLAM could play this reference role)
+\end{itemize}
+\textbf{Gaps our project could fill:}
+
+\begin{itemize}
+    \item This article does not integrate camera vision,our project brings this visual SLAM dimension
+    \item No real-time user guidance interface,our industrial tablet application fills this gap
+    \item No industrial maintenance context,our project explicitly targets this operational use case
+    \item Not tested on a tablet (different form factor from a smartphone, potentially different sensors)
+\end{itemize}
+
+\subsection{Article 5 : rWiFiSLAM}
+
+\textbf{3.5.1 General Information}
+
+\textbf{Title:} rWiFiSLAM: Effective WiFi Ranging based SLAM System in Ambient Environments
+
+\textbf{Authors:} Bo Wei, Mingcen Gao, Chengwen Luo, Sen Wang, Jin Zhang
+
+\textbf{Year of Publication:} 2022 (submitted to arXiv on December 16, 2022)
+
+\textbf{Country / Institution:}
+
+\begin{itemize}
+    \item United Kingdom ,  Lancaster University (School of Computing and Communications); Imperial College London (Dept. Electrical and Electronic Engineering)
+    \item USA ,  Google, San Francisco
+    \item China ,  Shenzhen University (College of Computer Science and Software Engineering)
+\end{itemize}
+\textbf{Journal / Conference:} Preprint arXiv:2212.08418v1 [cs.NI] ,  not yet published in a peer-reviewed journal at the time of submission
+
+\textbf{Field / Theme:} Indoor localization, SLAM, Wi-Fi RTT, IMU, PDR, pose graph, loop closure
+
+ \textbf{3.5.2 Context and Problem Statement}
+
+\textbf{Problem studied:} GPS is ineffective indoors. IMU-only solutions suffer from cumulative drift. Wi-Fi RSSI approaches are unstable due to multipath. Wi-Fi RTT (Round Trip Time, IEEE 802.11mc) offers better ranging performance, but typically requires prior knowledge of AP positions ,  which is constraining in new or dynamic environments.
+
+\textbf{Why is this problem important?} Accurate indoor localization is fundamental for mobile robotics, smart buildings, autonomous navigation systems, and location-based services on smartphones. Dependence on prior AP mapping limits deployment in dynamic environments (homes, reconfigured warehouses...).
+
+\textbf{Context:} Scientific and technological, with experiments in a real residential environment. The system is designed to run on standard mobile devices (smartphone).
+
+ \textbf{3.5.3 Objectives of the Article}
+
+\textbf{Main objective:} Design rWiFiSLAM, an indoor localization system that fuses Wi-Fi RTT measurements and IMU data within a robust SLAM framework, without requiring prior knowledge of AP positions.
+
+\textbf{Secondary objectives:}
+
+\begin{itemize}
+    \item Design an efficient clustering method on Wi-Fi RTT observations for loop closure detection
+    \item Use a robust pose graph SLAM to handle false positives in loop closure
+    \item Achieve sub-meter accuracy and improve performance by more than 90\% compared to PDR alone
+    \item Make the system operational in dynamic or unknown environments
+
+\end{itemize}
+ \textbf{3.5.4 Hypotheses / Research Questions}
+
+\textbf{Questions raised:}
+
+\begin{itemize}
+    \item Can Wi-Fi RTT measurements be used as direct observations for loop closure in a SLAM framework, without knowing AP positions?
+    \item Can a robust SLAM system effectively filter false positives of loop closure introduced by Wi-Fi multipath?
+    \item Does the fusion of IMUas  Wi-Fi RTT in a pose graph SLAM enable sub-meter accuracy in a real indoor environment?
+
+\end{itemize}
+\textbf{Hypotheses:}
+
+\begin{itemize}
+    \item A mobile device perceives similar Wi-Fi RTT measurements when located at the same physical place, allowing detection of a return to the same location (loop closure) by observation similarity
+    \item False positives of loop closure from multipath can be attenuated by a scaling factor in the robust SLAM
+    \item The cumulative drift of PDR can be corrected by loop closure constraints
+
+
+\end{itemize}
+ \textbf{3.5.5   Methodology}
+
+\textbf{Type of study:} Experimental ,  real-world tests in a residential environment (a house, one floor)
+
+\textbf{Data used:}
+
+\begin{itemize}
+    \item Source: on-site data collection in a house (10 m × 5 m area)
+    \item Total trajectory length: 308.8 m
+    \item 1 Google Nest WiFi routeras  3 Google Nest WiFi points (APs)
+    \item Smartphone: Google Pixel 6 (IMUas  Wi-Fi RTT)
+    \item IMU frequency: 100 Hz
+    \item Wi-Fi RTT frequency: 5 Hz
+\end{itemize}
+\textbf{Tools / Technologies / Algorithms:}
+
+\begin{itemize}
+    \item PDR (Pedestrian Dead Reckoning): step detection (threshold on standard deviation of acceleration norm), step length estimation (Weinberg algorithm), attitude estimation (gyroscopeand  magnetometer)
+    \item Wi-Fi RTT (IEEE 802.11mc) for ranging measurements
+    \item Clustering by Euclidean distance on Wi-Fi RTT observation vectors (loop closure detection)
+    \item Traditional pose graph SLAM (Thrun \& Montemerlo) and robust SLAM (scaling factor s\_i)
+    \item Robust optimization: argmin with scaling factor s\_i = min(1, 2C/(Cand  Θ²\_i))
+\end{itemize}
+\textbf{Procedure (main steps):}
+
+\begin{enumerate}
+    \item Continuous collection of IMU measurements (acceleration, angular velocity, magnetic field),  initial trajectory via PDR
+    \item Simultaneous collection of Wi-Fi RTT measurements from APs
+    \item Clustering on Wi-Fi RTT vectors to identify candidate loop closures
+    \item Pose graph construction: raw trajectory constraints (IMU/PDR)and  loop closure constraints (Wi-Fi RTT)
+    \item Application of robust SLAM with scaling factor to weight false positives
+    \item Global graph optimization,  corrected trajectory
+    \item Evaluation: RMSE, CDF of errors, end-point localization error
+
+\end{enumerate}
+ \textbf{3.5.6   Main Results}
+
+\textbf{Results obtained:}
+
+\begin{table}
+\centering
+
+\begin{tabular}{l l l l}
+\textbf{Method} & \textbf{Trajectory RMSE} & \textbf{End-point Error} & \textbf{90th percentile Error} \\
+\hline
+\textbf{IMU PDR only} & 2.67 m & 9.84 m & 9.12 m \\
+\hline
+\textbf{Traditional SLAM} & 5.95 m & ≈ 0 m & 4.46 m \\
+\hline
+\textbf{rWiFiSLAM (proposed)} & \textbf{0.13 m} & \textbf{≈ 0 m} & \textbf{0.21 m} \\
+\hline
+
+\end{tabular}
+
+\end{table}
+
+\textbf{Key numerical data:}
+
+\begin{itemize}
+    \item RMSE of 0.13 m,  sub-meter accuracy confirmed
+    \item 97.6\% improvement over PDR alone (CDF)
+    \item 95.2\% improvement over traditional SLAM (CDF)
+    \item Overall improvement > 90\% vs. PDR (objective achieved)
+\end{itemize}
+\textbf{Performance / Comparisons:}
+
+\begin{itemize}
+    \item Traditional SLAM fails due to unfiltered false positives (collapsed trajectory, RMSE = 5.95 m)
+    \item Robust SLAM (rWiFiSLAM) effectively compensates for these false positives through the scaling factor
+    \item End-point error is nearly zero for both rWiFiSLAM and traditional SLAM, due to loop closures near the final point
+
+
+\end{itemize}
+ \textbf{3.5.7   Analysis and Discussion}
+
+\textbf{Interpretation of results:} The key to rWiFiSLAM's success is the combination of two complementary mechanisms: (1) correction of IMU drift by Wi-Fi RTT loop closures, and (2) robustness to false positives through the scaling factor in the SLAM. Wi-Fi RTT, more stable than RSSI, provides ranging observations consistent enough to enable reliable clustering.
+
+\textbf{Strengths:}
+
+\begin{itemize}
+    \item No prior knowledge of AP positions required,  simplified deployment in any environment
+    \item Sub-meter accuracy (0.13 m RMSE) on consumer-grade hardware (Google Pixel 6and  Google Nest WiFi)
+    \item Extensible framework applicable to any dynamic environment
+    \item Explicit handling of false positives, a real problem often ignored in the literature
+\end{itemize}
+\textbf{Limitations:}
+
+\begin{itemize}
+    \item Tests limited to a single small residential environment (10 m × 5 m)
+    \item Wi-Fi RTT sampling rate limited to 5 Hz by hardware constraints (risk of packet loss beyond)
+    \item Android 12 API does not allow access to individual ranging measurements (average only)
+    \item No validation in an industrial or large-scale environment
+\end{itemize}
+\textbf{Comparison with other works:}
+
+\begin{itemize}
+    \item Superior to traditional Wi-Fi RSSI-based SLAM (unstable due to multipath)
+    \item Comparable to UWB approaches in accuracy but with far more accessible hardware
+    \item Different from fingerprinting approaches: no offline mapping phase required
+
+
+\end{itemize}
+ \textbf{3.5.8   Contribution of the Article}
+
+\textbf{What this article brings new:}
+
+\begin{itemize}
+    \item A complete indoor SLAM system based on Wi-Fi RTT and IMU, operational without prior knowledge of AP positions
+    \item An efficient clustering method for loop closure detection from Wi-Fi RTT observations alone
+    \item Application of a robust pose graph SLAM to filter false positives of loop closure
+\end{itemize}
+\textbf{Innovation:}
+
+\begin{itemize}
+    \item Removal of dependence on known AP positions ,  the main contribution distinguishing rWiFiSLAM from classical trilateration approaches
+    \item Direct use of Wi-Fi RTT observations as place descriptors for loop closure, without an offline mapping phase
+    \item Integration of the scaling factor in SLAM for robustness to false positives
+
+
+\end{itemize}
+ \textbf{3.5.9 Limitations and Perspectives}
+
+\textbf{Limitations acknowledged by the authors:}
+
+\begin{itemize}
+    \item Tests in a single residential environment, small surface area
+    \item Hardware constraints limiting Wi-Fi RTT frequency to 5 Hz
+    \item Inaccessibility of individual ranging measurements on Android 12
+\end{itemize}
+\textbf{Proposed perspectives:}
+
+\begin{itemize}
+    \item Extension to larger and more complex environments (offices, warehouses)
+    \item Integration of additional sensors to further improve accuracy
+    \item Improvement of multipath management for more reliable Wi-Fi RTT measurements
+\end{itemize}
+\textbf{Possible improvements:}
+
+\begin{itemize}
+    \item Fusion with camera vision (visual SLAM) to resolve ambiguities in Wi-Fi-poor areas
+    \item Application on an industrial tablet with adaptation of the PDR algorithm to operator movements
+    \item 3D extension for multi-floor environments
+
+\end{itemize}
+ \textbf{3.5.10 Relevance to our Project}
+
+\textbf{How this article is useful:}
+
+\begin{itemize}
+    \item It represents the most direct reference for our WiSLAM component: a SLAM system based on Wi-Fi RTTand  IMU achieving sub-meter accuracy, which is exactly what you wish to implement
+    \item The removal of dependence on AP positions is particularly relevant in an industrial context where the Wi-Fi topology may evolve
+    \item The pose graph SLAM framework is reusable and extensible to integrate visual observations
+\end{itemize}
+\textbf{Reusable ideas:}
+
+\begin{itemize}
+    \item The overall IMU/PDRand  Wi-Fi RTT clusteringand  robust pose graph SLAM architecture as the backbone of our WiSLAM
+    \item The loop closure mechanism by clustering on Wi-Fi observation vectors
+    \item False positive management by scaling factor (critical in a noisy industrial environment)
+\end{itemize}
+\textbf{Gaps our project could fill:}
+
+\begin{itemize}
+    \item rWiFiSLAM does not fuse with camera vision ,  our project brings this complementary visual SLAM dimension
+    \item No user guidance interface ,  our industrial tablet application fills this gap
+    \item Not tested in an industrial maintenance context nor for navigation toward target points ,  our project explicitly targets this operational need
+    \item Not tested on a tablet (different form factor from a smartphone, potentially different sensors)
+\end{itemize}
+
+\subsection{Article 6 : A Learning-Based Sequence-to-Sequence WiFi Fingerprinting Framework for Accurate Pedestrian Indoor Localization
+}
+\textbf{3.6.1 General Information}
+
+\begin{itemize}
+    \item \textbf{Title:} A Learning-Based Sequence-to-Sequence WiFi Fingerprinting Framework for Accurate Pedestrian Indoor Localization Using Unconstrained RSSI
+    \item \textbf{Authors:} Yingying Wang, Hu Cheng, Max Q.-H. Meng
+    \item \textbf{Year:} 2025 (IEEE publication)
+    \item \textbf{Institution:} The Chinese University of Hong Kong (CUHK), Hong Kong SAR, China; Shenzhen Key Laboratory of Robotics Perception and Intelligence, China
+    \item \textbf{Journal/Conference:} IEEE Transactions on Instrumentation and Measurement (or related IEEE journal)
+    \item \textbf{Field/Theme:} Indoor localization, Wi-Fi RSSI fingerprinting, deep learning, sequence-to-sequence, pedestrian navigation
+
+\end{itemize}
+\textbf{3.6.2    Context and Problem Statement}
+
+Indoor location-based services lack a universal standard equivalent to GPS. Existing Wi-Fi RSSI fingerprinting approaches are typically validated on controlled datasets with a limited number of APs (often fewer than 20) whose positions are known, which diverges strongly from real buildings where hundreds of APs coexist without disclosed installation details. This discrepancy causes significant performance drops when these methods are deployed in realistic conditions. Furthermore, most fingerprinting systems map a single RSSI measurement to a single position, ignoring the temporal correlation between successive measurements ,  a major source of instability in dynamic environments where people or objects move and alter signal propagation.
+
+\textbf{3.6.3    Objectives}
+
+\begin{itemize}
+    \item \textbf{Main objective:} Propose a data-driven Wi-Fi RSSI fingerprinting system capable of operating with hundreds of APs without knowing their positions, by treating continuous RSSI measurements as temporal sequences and mapping them to location sequences.
+    \item \textbf{Secondary objectives:} 
+    \begin{itemize}
+        \item Define an efficient AP selection strategy based on detection frequency (proportion k)
+        \item Build a realistic fingerprinting database using unconstrained pedestrian walking
+        \item Validate the system on public datasets and a 20-hour self-collected dataset (SHB4)
+        \item Demonstrate robustness to AP removal and varying pedestrian speeds
+
+    \end{itemize}
+\end{itemize}
+\textbf{3.6.4    Hypotheses / Research Questions}
+
+\begin{itemize}
+    \item Can a sequence-to-sequence deep learning model better capture the temporal correlation of RSSI measurements compared to single-point fingerprinting approaches?
+    \item Does selecting only the most frequently detected APs (proportion k) improve localization accuracy compared to using all detected APs?
+    \item Is the proposed system robust to the removal of frequently detected APs, simulating partial infrastructure failure?
+\end{itemize}
+The authors hypothesize that: (1) treating RSSI as a sequence rather than a snapshot improves position estimation consistency; (2) the optimal proportion k of APs to use is around 2/3; (3) the model can handle AP removal by redistributing attention across remaining signals.
+
+\textbf{3.6.5 Methodology}
+
+\begin{itemize}
+    \item \textbf{Type of study:} Experimental ,  validated on two public datasets (University B, Office C from NILoc) and one 20-hour self-collected dataset (SHB4, CUHK campus, 4th floor of SHB building)
+    \item \textbf{Data:} 
+    \begin{itemize}
+        \item University B: 554 APs, 14.52 km test trajectories, 12,775 scans
+        \item Office C: 170 APs, 6.16 km test trajectories, 16,989 scans
+        \item SHB4 (self-collected): 833 BSSIDs, 22.28 km training, 10.42 km test, collected over one month
+        \item Ground truth: visual-inertial module of ASUS Tango phone at 200 Hz; RSSI sampled at 1/4 Hz
+    \end{itemize}
+    \item \textbf{Tools and algorithms:} 
+    \begin{itemize}
+        \item Pre-processing: selection of top k most frequently detected MAC addresses; RSSI of undetected APs set to −100 dBm
+        \item Deep learning model: 1D ResNet-18 backboneand  specialized CNN layerand  3-layer MLP
+        \item Sequence-to-sequence formulation: input = sequence of i RSSI vectors,  output = sequence of i position points
+        \item Optimal parameters found by grid search: k = 2/3, i = 4
+        \item Comparison baselines: MIMO (2-layer LSTM), Random Forest (120 trees), RanNN (randomized neural network), RoNIN (inertial tracking)
+        \item Loss function: Mean Squared Error (MSE)
+
+
+    \end{itemize}
+\end{itemize}
+\textbf{3.6.6 Main Results}
+
+\begin{table}
+\centering
+
+\end{table}
+
+\begin{itemize}
+    \item Optimal AP proportion: k = 2/3 of all detected APs
+    \item Optimal sequence length: i = 4 consecutive RSSI vectors
+    \item Robust to removal of up to 50 APs: model still outperforms MIMO
+    \item Inference time: 0.18 ms per position (real-time capable)
+    \item 6.08 million parameters ,  lightweight enough for mobile deployment
+
+
+\end{itemize}
+\textbf{3.6.7 Analysis and Discussion}
+
+The sequence-to-sequence formulation is the key innovation: by estimating a sequence of positions from a sequence of RSSI inputs rather than a single point, the model exploits temporal correlations between adjacent positions and reduces the impact of instantaneous signal noise. Using 2/3 of APs strikes the right balance: too few APs lose location discriminability, while too many introduce noisy rarely-detected signals. The ResNet-18 architecture outperforms LSTM and TCN baselines, benefiting from its residual connections and robustness to overfitting. The system handles dynamic environments naturally since the DNN learns from signal fluctuations caused by moving objects.
+
+\textbf{Strengths:}
+
+\begin{itemize}
+    \item No knowledge of AP positions or building map required
+    \item Works with hundreds of real-world APs in unconstrained collection conditions
+    \item Robust to AP removal (infrastructure failure simulation)
+    \item Consistent performance across different walking speeds
+    \item Easily reproducible data collection pipeline shared publicly
+\end{itemize}
+\textbf{Weaknesses:}
+
+\begin{itemize}
+    \item RSSI sampling rate limited to 1/4 Hz (Android hardware constraint)
+    \item Performance degrades in areas with sparse Wi-Fi coverage
+    \item No IMU fusion implemented (left as future work)
+    \item Tested only in academic/office environments, not industrial settings
+
+
+\end{itemize}
+\textbf{3.6.8 Contribution of the Article}
+
+\begin{itemize}
+    \item A novel seq2seq Wi-Fi RSSI fingerprinting framework that maps continuous RSSI sequences to location sequences, rather than single-point estimates
+    \item A realistic unconstrained data collection methodology using visual-inertial ground truth, requiring no expert intervention
+    \item A 20-hour self-collected dataset (SHB4) with 899 BSSIDs, shared publicly to facilitate future research
+    \item Demonstration that selecting 2/3 of the most frequently detected APs as input features consistently optimizes localization accuracy
+
+
+\end{itemize}
+\textbf{3.6.9       Limitations and Perspectives}
+
+\textbf{Limitations acknowledged by the authors:}
+
+\begin{itemize}
+    \item RSSI sampling sparsity (1/4 Hz) causes unpredictable non-straight paths between consecutive estimates
+    \item System relies solely on Wi-Fi RSSI patterns ,  degrades in areas with poor Wi-Fi coverage
+    \item Not yet tested in multi-floor buildings
+\end{itemize}
+\textbf{Proposed perspectives:}
+
+\begin{itemize}
+    \item Integration of IMU data to complement Wi-Fi RSSI for higher-frequency position estimation
+    \item Testing in various indoor environments including multi-floor buildings
+    \item Investigation of filtering techniques to improve RSSI data quality
+    \item Study of user-specific factors such as walking speed and device handling
+
+
+\end{itemize}
+\textbf{3.6.10   Relevance to Our Project}
+
+This article provides a strong baseline for the Wi-Fi fingerprinting dimension of our project. Its ability to function with hundreds of unlocated APs, without any offline infrastructure mapping, is directly applicable to an industrial workshop context. The seq2seq framework could be adapted to improve the robustness of our WiSLAM position estimates, particularly in areas where RTT measurements are intermittent. The self-collected dataset methodology also provides a practical template for collecting our own training data in the target workshop environment.
+
+\textbf{Gaps our project fills:}
+
+\begin{itemize}
+    \item This system relies purely on RSSI fingerprinting with no SLAM component ,  our project adds the pose graph SLAM and RTT ranging for greater geometric consistency
+    \item No guidance functionality toward a target location ,  our project explicitly addresses operator navigation to faulty equipment
+    \item Not designed for industrial environments with metallic interference and moving machinery ,  our project targets this specific context
+\end{itemize}
+No real-time guidance interface ,  our industrial tablet application provides this missing operational layer 
+\end{itemize}
+
+
+
+\subsection{Article 7 : FootSLAM: Pedestrian Simultaneous Localization and Mapping Without Exteroceptive Sensors}
+
+
+\textbf{3.7.1    General Information}
+
+\begin{itemize}
+    \item \textbf{Title:} FootSLAM: Pedestrian Simultaneous Localization and Mapping Without Exteroceptive Sensors ,  Hitchhiking on Human Perception and Cognition
+    \item \textbf{Authors:} Michael Angermann, Patrick Robertson
+    \item \textbf{Year:} 2012
+    \item \textbf{Institution:} Institute of Communications and Navigation, German Aerospace Center (DLR), Wessling, Germany
+    \item \textbf{Journal/Conference:} Proceedings of the IEEE, Vol. 100, May 2012
+    \item \textbf{Field/Theme:} Pedestrian navigation, SLAM, inertial sensors, IMU, dead reckoning, Bayesian estimation, indoor localization
+
+
+\end{itemize}
+\textbf{3.7.2    Context and Problem Statement}
+
+A well-established principle in navigation states that inertial-sensor-only navigation is subject to unbounded growth of position error over time. For pedestrian navigation, this means hundreds of meters of error after just a few minutes with low-cost MEMS sensors, even with Zero Velocity Update (ZUPT) corrections. Existing infrastructure-less approaches either require a prior map of the environment, or exteroceptive sensors such as cameras or LiDARs ,  which are impractical for pedestrians due to mounting constraints, cost, and privacy concerns. No solution existed that could achieve long-term position stability based solely on inertial data without any prior map or external sensor.
+
+\textbf{3.7.3    Objectives}
+
+\begin{itemize}
+    \item \textbf{Main objective:} Develop FootSLAM, a Bayesian SLAM algorithm for pedestrians using only foot-mounted IMU data, capable of maintaining bounded position error over extended periods without any prior map or exteroceptive sensors.
+    \item \textbf{Secondary objectives:} 
+    \begin{itemize}
+        \item Formulate the problem as a Dynamic Bayesian Network (DBN) to formally justify the approach
+        \item Develop PlaceSLAM: an extension integrating sporadic place detection hints (RFID, visual markers) to improve accuracy
+        \item Develop FeetSLAM: a collaborative multi-user extension enabling community-generated indoor maps
+        \item Demonstrate that human perception and cognition implicitly constrain pedestrian motion enough to enable SLAM
+
+
+    \end{itemize}
+\end{itemize}
+\textbf{3.7.4 Hypotheses / Research Questions}
+
+\begin{itemize}
+    \item Can a pedestrian SLAM system achieve long-term position stability using only foot-mounted inertial sensors, without exteroceptive sensors or prior maps?
+    \item Does the physical structure of indoor environments (walls, corridors, doors) implicitly constrain human motion enough to enable reliable loop closure and mapping?
+    \item Can collaborative mapping by multiple pedestrians (FeetSLAM) produce coherent large-scale indoor maps?
+\end{itemize}
+The authors hypothesize that: (1) humans navigate by avoiding walls and obstacles, implicitly constraining their trajectories in ways that enable statistical loop closure detection; (2) this "hitchhiking on human perception" provides enough information to bound position error; (3) combining multiple pedestrians' data amplifies this effect.
+
+\textbf{3.7.5    Methodology}
+
+\begin{itemize}
+    \item \textbf{Type of study:} Experimental ,  initial validation in an office building, extended validation in MIT's Stata Center (large academic building with non-rectangular structures)
+    \item \textbf{Data:} Foot-mounted IMU (accelerometersand  gyroscopes), three walks of \~10 minutes each, ground truth at two reference positions in the main corridor
+    \item \textbf{Tools and algorithms:} 
+    \begin{itemize}
+        \item PDR with ZUPT: zero-velocity updates during foot rest phases to recalibrate IMU errors
+        \item Dynamic Bayesian Network (DBN): formal probabilistic model of pedestrian pose, step transitions, map, and odometry errors
+        \item Probabilistic transition map: 2D hexagonal grid (radius r = 0.5 m) storing transition probabilities between adjacent hexagons
+        \item Bayesian learning of transition probabilities: counts updated each time a particle crosses a hexagon boundary
+        \item Rao-Blackwellized particle filter: each particle carries its own pose estimate and map
+        \item Weight update: wki∝wk−1i⋅Iiw\^i\_k \textbackslash{}propto w\^i\_{k-1\} \textbackslash{}cdot I\^i wki∝wk−1i⋅Ii where IiI\^i Ii integrates map transition probabilities 
+        \item PlaceSLAM: weight update incorporating place detection events (RFID tags, visual landmarks)
+        \item FeetSLAM: iterative combination of multiple pedestrians' odometry data sets, inspired by Turbo decoding
+
+
+    \end{itemize}
+\end{itemize}
+\textbf{3.7.6 Main Results}
+
+\begin{itemize}
+    \item Accuracy of approximately 1–3 m in corridors, better in frequently visited areas
+    \item Particles start to converge once the user revisits a region for approximately 10 m
+    \item Map scale error < 10\% (correctable with a constant factor of 1.15 for the tested sensor setup)
+    \item Current implementation runs in real-time for \~30,000 particles on a standard PC
+\end{itemize}
+
+\textbf{3.7.7    Analysis and Discussion}
+
+The fundamental insight of FootSLAM is elegant: humans do not walk through walls. By modeling the probability of crossing transitions between hexagonal cells, the algorithm learns which transitions are physically possible and progressively eliminates impossible trajectories. This "hitchhiking on human cognition" provides the implicit exteroceptive sensing that traditional SLAM obtains from cameras or LiDARs, but without any dedicated sensor. The approach works best in structured environments with corridors and regular passage patterns. Open areas without motion constraints (large halls) can be bridged for 30–300 seconds with enough particles, but remain a challenge.
+
+\textbf{Strengths:}
+
+\begin{itemize}
+    \item No exteroceptive sensors required ,  IMU only
+    \item No prior map required
+    \item Long-term error stability demonstrated experimentally
+    \item Extensible to collaborative mapping (FeetSLAM) and place hint integration (PlaceSLAM)
+    \item Privacy-friendly compared to camera-based SLAM
+\end{itemize}
+\textbf{Weaknesses:}
+
+\begin{itemize}
+    \item Requires foot-mounted IMU (ZUPT-dependent) ,  cannot yet work from hip or pocket placement
+    \item High computational cost: >10,000 particles needed for good accuracy
+    \item Requires sufficient environmental constraints ,  fails in large open areas
+    \item Map scaling error due to IMU biases and ZUPT artifacts
+
+
+\end{itemize}
+\textbf{3.7.8    Contribution of the Article}
+
+\begin{itemize}
+    \item First demonstration of pedestrian SLAM using only foot-mounted inertial sensors, with no exteroceptive sensors or prior map
+    \item Formal Bayesian derivation via DBN, providing a rigorous theoretical foundation for the approach
+    \item Introduction of the probabilistic hexagonal transition map as a compact and learnable representation of indoor environments
+    \item PlaceSLAM and FeetSLAM extensions enabling integration of sparse hints and collaborative multi-user mapping
+    \item Proof of concept at MIT Stata Center, demonstrating scalability to large, complex, non-rectangular environments
+
+
+\end{itemize}
+\textbf{3.7.9    Limitations and Perspectives}
+
+\textbf{Limitations acknowledged by the authors:}
+
+\begin{itemize}
+    \item Dependency on foot-mounted IMU and ZUPT ,  limits practical deployment
+    \item High particle count needed (>10,000) ,  computational burden for real-time mobile applications
+    \item Scaling ambiguity inherent to SLAM without absolute reference
+    \item Privacy implications: IMU data alone can reveal building layouts and movement histories
+\end{itemize}
+\textbf{Proposed perspectives:}
+
+\begin{itemize}
+    \item Migration to hip- or pocket-carried devices as MEMS sensor quality improves
+    \item Reduction of computational complexity for large-scale and 3D deployment
+    \item Integration with GPS anchoring for outdoor-indoor continuity
+    \item FootSLAM-like approach extended to cold-atom interferometry inertial sensors for near-perfect accuracy
+
+\end{itemize}
+\textbf{3.7.10      Relevance to Our Project}
+
+FootSLAM is the foundational reference for the inertial component of our localization system. Its core principle ,  correcting IMU drift through loop closure without any prior map ,  is directly applicable to the industrial workshop context where no pre-built map is available. The PlaceSLAM extension, where sparse place hints (here: Wi-Fi RTT measurements) are fused with inertial odometry, is conceptually identical to the WiSLAM hybrid approach we aim to implement.
+
+\textbf{Gaps our project fills:}
+
+\begin{itemize}
+    \item FootSLAM relies solely on foot-mounted IMU with no Wi-Fi component ,  our project adds Wi-Fi RTT ranging as the primary loop closure signal, enabling deployment on a standard industrial tablet without foot sensors
+    \item FeetSLAM requires multiple pedestrians for map building ,  our system targets single-operator deployment for reactive maintenance
+    \item Not validated in industrial environments with metallic structures and electromagnetic interference ,  our project explicitly addresses this context
+    \item No operator guidance toward a target point ,  our project provides the complete navigation chain from localization to guided routing to faulty equipment
+\end{itemize}
+
+\section{Comparative Synthesis}
+
+After going through all seven articles, some things are honestly pretty clear.
+
+Fingerprinting works but it has one big problem for us specifically : you need to walk around the entire workshop and collect Wi-Fi signal data at hundreds of points before you can do anything. In a factory where machines get moved and the layout changes, that map goes stale fast. Nobody on a maintenance team is going to redo that every month. So fingerprinting alone is not our answer, even if the accuracy numbers look decent.
+
+Trilateration is the simplest approach on paper but it was only tested in a MATLAB simulation with four access points in a perfectly clean environment. In a real workshop with metal everywhere and machines running, RSSI measurements fluctuate too much to convert them reliably into distances. That 1 meter accuracy would not survive contact with reality.
+
+The particle filter fusion from Abdellatif is genuinely interesting and the 96\% accuracy result is good. But their system uses magnetic field fingerprinting as one of the inputs, and that is a real problem in an industrial setting. Electric motors, metal frames, and power cables all distort the local magnetic field in ways that are hard to predict or calibrate. It works great in a university corridor, less so next to a CNC machine.
+
+FootSLAM is clever and the fact that it needs zero infrastructure is impressive. But asking a maintenance technician to strap a sensor to their foot is not realistic. And beyond the practicality issue, the algorithm needs thousands of particles to converge properly, which is expensive for real-time use on a tablet.
+
+The article that stood out the most is rWiFiSLAM. Getting 0.13 m RMSE on a smartphone without knowing where the access points are and without any offline mapping phase is genuinely good. The architecture makes sense for our context. The only real concern is that it was tested in a 10 by 5 meter apartment which is nothing like an industrial workshop. We do not know yet how Wi-Fi RTT behaves in a noisy RF environment with metal reflections. That is actually one of the things our project will help answers.
+
+We chose two approaches to implement and compare.
+
+\textbf{Solution 1 : Wi-Fi RTT + IMU Pose Graph SLAM}, based on rWiFiSLAM. No pre-built map, no need to know where the access points are, IMU drift corrected continuously by Wi-Fi loop closures. This is the most promising approach for our context and the one we want to push first.
+
+\textbf{Solution 2 : Wi-Fi RSSI Fingerprinting + IMU Particle Filter}, inspired by articles 1, 4, and 6. A one-time radio map of the workshop, then real-time fusion with IMU data through a particle filter. More classic, easier to implement, and useful as a comparison baseline.
+
+These two are not set in stone. If Wi-Fi RTT turns out to be poorly supported on our hardware, or if the fingerprinting map degrades too quickly in our environment, we will adapt. The goal at this stage is to have two concrete starting points that we can actually build, test, and compare honestly.
+
+ 
+ 
+\section{Conclusion}
+
+This state of the art gave us a clearer picture of where indoor localization research stands today and what it still struggles with. We went through seven articles covering Wi-Fi fingerprinting, inertial navigation, trilateration, hybrid fusion, and SLAM-based approaches. Each one brought something useful, but none of them fully answered our question.
+
+The main gaps we identified are straightforward. Most systems were tested in clean, controlled environments ,  offices, university corridors, residential apartments. Nobody tested their solution in an actual industrial workshop with metal shelves, moving forklifts, and noisy Wi-Fi. Beyond that, the localization problem is only half of what we need to solve. Several articles localize a user reasonably well, but none of them go further and say: now that we know where the operator is, let us guide them to the broken machine. That second part ,  the guidance ,  is completely absent from the literature we reviewed, and it is the core of our project.
+
+What our project brings is an attempt to connect these two parts. We are not just trying to localize an operator in a workshop, we are trying to build a system that takes a maintenance alert, knows where the operator is, and automatically shows them the way to the equipment. The WiSLAM approach using Wi-Fi signal strength combined with FootSLAM inertial data gives us a realistic shot at doing this without requiring expensive dedicated infrastructure or a pre-built map of the facility.
+
+We are honest about the fact that this is ambitious for a research project at our level. But the literature review confirmed that this combination ,  localization plus guidance in an industrial context ,  has not been done, which means there is a real contribution to make. The next step is to stop reading and start building.
+
+
+%\section{References}
+
+\begin{thebibliography}{99}
+
+\bibitem{colas_slam}
+F. Colas, ``Cartographie et SLAM,'' LORIA, Université de Lorraine. [Online]. Available: \url{https://members.loria.fr/FColas/lectures/robotique_autonome_sir/3_4_cartographie_slam.pdf}
+
+\bibitem{dronexperts_slam}
+DroneXperts, ``Guide SLAM : technologie et secteur minier.'' [Online]. Available: \url{https://www.dronexperts.com/article/guide-slam-technologie-secteur-minier/}
+
+\bibitem{invoxia_indoor}
+Invoxia, ``Géolocalisation indoor.'' [Online]. Available: \url{https://www.invoxia.com/blog/fr/gpstrackers/indoor-geolocation/}
+
+\bibitem{emesent_slam}
+Emesent, ``Understanding SLAM Technology: A Guide to Simultaneous Localization and Mapping.'' [Online]. Available: \url{https://www.emesent.com/fr/blog/understanding-slam-technology-a-guide-to-simultaneous-localization-and-mapping}
+
+\bibitem{cisco_location}
+Cisco Systems, ``Location Services in an Enterprise Mobility Design,'' Cisco Enterprise Mobility Design Guide, 2010. [Online]. Available: \url{https://www.cisco.com/en/US/docs/solutions/Enterprise/Mobility/emob30dg/Locatn.html}
+
+\bibitem{sbg_slam}
+SBG Systems, ``SLAM -- Simultaneous Localization and Mapping,'' Glossary. [Online]. Available: \url{https://www.sbg-systems.com/fr/glossary/slam-simultaneous-localization-and-mapping/}
+
+\bibitem{geosystems_slam}
+GeoSystems, ``SLAM LiDAR : comprendre, comparer et choisir la cartographie 3D intelligente.'' [Online]. Available: \url{https://geosystems.fr/blog/slam-lidar-comprendre-comparer-et-choisir-la-cartographie-3d-intelligente/}
+
+\bibitem{navvis_slam}
+NavVis, ``SLAM Technology.'' [Online]. Available: \url{https://fr.navvis.com/technology/slam}
+
+\bibitem{mrdvs_rgbd}
+MRDVS, ``Why RGB-D SLAM Cameras are Ideal for Industrial Robots.'' [Online]. Available: \url{https://mrdvs.com/fr/why-rgbd-slam-cameras-are-ideal-for-industrial-robots/}
+
+\bibitem{mbuya_slam}
+P. B. Mbuya, ``STOP LOOK ASSESS MANAGE -- L'utilisation de la technologie SLAM,'' LinkedIn, 2024. [Online]. Available: \url{https://fr.linkedin.com/posts/peter-blaise-mbuya-a3621813a_stop-look-assess-manage-lutilisation-activity-7266778410666913793-2njK}
+
+\bibitem{ieee_9708782}
+[Author(s) à compléter], ``[Title à compléter],'' \textit{[Journal à compléter]}, 2022. [Online]. Available: \url{https://ieeexplore.ieee.org/document/9708782}
+
+\bibitem{ieee_8917627}
+[Author(s) à compléter], ``[Title à compléter],'' \textit{[Journal à compléter]}, 2019. [Online]. Available: \url{https://ieeexplore.ieee.org/document/8917627}
+
+\bibitem{pole_ecoindustries}
+Pôle Eco-Industries, ``Utilisation de la géolocalisation indoor dans le secteur de l'industrie et l'industrie 4.0.'' [Online]. Available: \url{https://www.pole-ecoindustries.fr/utilisation-de-la-geolocalisation-indoor-dans-le-secteur-de-lindustrie-et-lindustrie-4-0/}
+
+\bibitem{hal_03593071}
+[Author(s) à compléter], ``[Title à compléter],'' HAL Science, 2022. [Online]. Available: \url{https://hal.science/hal-03593071/document}
+
+\bibitem{hubone_indoor}
+HubOne, ``Géolocalisation indoor : une technologie prometteuse pour optimiser les flux.'' [Online]. Available: \url{https://www.hubone.fr/oneblog/geolocalisation-indoor-une-technologie-prometteuse-pour-optimiser-les-flux/}
+
+\bibitem{ieee_7857443}
+[Author(s) à compléter], ``[Title à compléter],'' \textit{[Journal à compléter]}, 2017. [Online]. Available: \url{https://ieeexplore.ieee.org/document/7857443}
+
+\end{thebibliography}
+\newpage
+
+\addcontentsline{toc}{section}{Références}
+%\nocite{*} % pour afficher toutes les entrées (même celles non citées)
+            % de la base de données bibliographique
+            
+\newpage
+
+\appendix % (Annexes) si nécessaire / if necessary
+%\section{Annexes}
+
+%\subsection{Précisions sur un certain point}
+  
+%\subsection{Précisions sur un autre point}
+
+ \newpage
+\section*{Glossary}
+\addcontentsline{toc}{section}{Glossary}
+
+\begin{description}
+
+\item[\textbf{Access Point (AP)}]
+A network device that allows wireless devices to connect to a wired network using Wi-Fi. In indoor localization, APs serve as reference transmitters whose signals are measured to estimate a user's position.
+
+\item[\textbf{AoA (Angle of Arrival)}]
+A localization technique that estimates the direction from which a radio signal arrives at a receiver, allowing position estimation through geometric intersection of multiple angle measurements.
+
+\item[\textbf{BLE (Bluetooth Low Energy)}]
+A wireless communication protocol designed for short-range, low-power applications. Used in indoor localization as an alternative to Wi-Fi, typically with beacon infrastructure.
+
+\item[\textbf{BSSID (Basic Service Set Identifier)}]
+The unique MAC address identifying a specific wireless access point or virtual access point. Used in Wi-Fi fingerprinting to distinguish individual APs in a dense network environment.
+
+\item[\textbf{CSI (Channel State Information)}]
+Detailed information about the radio channel between a transmitter and receiver, including amplitude and phase differences across multiple signal paths. Provides richer localization features than RSSI alone but requires specialized hardware.
+
+\item[\textbf{DBN (Dynamic Bayesian Network)}]
+A probabilistic graphical model that represents temporal dependencies between random variables across successive time steps. Used in FootSLAM to formally model the relationship between pedestrian pose, motion, and map.
+
+\item[\textbf{Dead Reckoning}]
+A navigation method that estimates current position by extrapolating from a known previous position using measurements of speed, direction, and elapsed time. Prone to cumulative drift over time without external corrections.
+
+\item[\textbf{DNN (Deep Neural Network)}]
+A multi-layer artificial neural network capable of learning complex non-linear mappings between inputs and outputs. Used in Wi-Fi fingerprinting to map RSSI measurements to position estimates.
+
+\item[\textbf{DTW (Dynamic Time Warping)}]
+An algorithm that measures similarity between two temporal sequences by aligning them through non-linear time stretching or compression. Used to synchronize Wi-Fi RSSI data with robot odometry in fingerprinting dataset construction.
+
+\item[\textbf{FeetSLAM}]
+A collaborative extension of FootSLAM that combines odometry data from multiple pedestrians iteratively to produce community-generated indoor maps with improved coverage and accuracy.
+
+\item[\textbf{Fingerprinting}]
+An indoor localization technique that uses a pre-collected database of signal measurements (radio map) at known reference points to match online measurements to estimated positions. Consists of an offline training phase and an online positioning phase.
+
+\item[\textbf{FootSLAM}]
+A pedestrian SLAM algorithm developed by Angermann and Robertson (DLR, 2012) that achieves simultaneous localization and mapping using only foot-mounted inertial sensors, without any exteroceptive sensors or prior map.
+
+\item[\textbf{GPS (Global Positioning System)}]
+A satellite-based navigation system providing accurate outdoor positioning. GPS signals are severely attenuated or blocked by building structures, making it ineffective for indoor localization.
+
+\item[\textbf{IMU (Inertial Measurement Unit)}]
+A sensor device that measures acceleration, angular velocity, and sometimes magnetic field using accelerometers, gyroscopes, and magnetometers. Used in pedestrian dead reckoning and SLAM systems to estimate motion between measurements.
+
+\item[\textbf{Industry 4.0}]
+The fourth industrial revolution, characterized by the integration of digital technologies, cyber-physical systems, IoT, and intelligent automation into manufacturing processes. Indoor localization of maintenance personnel is a direct enabler of Industry 4.0 smart factory applications.
+
+\item[\textbf{IoT (Internet of Things)}]
+A network of physical devices embedded with sensors, software, and connectivity that enables them to collect and exchange data. Indoor localization is a key enabling technology for IoT-based smart building and industrial applications.
+
+\item[\textbf{KNN / WKNN (K-Nearest Neighbors / Weighted KNN)}]
+A machine learning classification algorithm that assigns a position based on the K most similar fingerprints in the database. The weighted variant gives closer matches higher influence on the position estimate.
+
+\item[\textbf{LiDAR (Light Detection and Ranging)}]
+A sensor technology that measures distances by emitting laser pulses and detecting reflections. Used in visual SLAM systems and robotic platforms for precise 2D or 3D environment mapping.
+
+\item[\textbf{Loop Closure}]
+In SLAM, the detection that a mobile device has returned to a previously visited location. Loop closure allows the system to correct accumulated drift errors by linking current observations to past map states.
+
+\item[\textbf{LSTM (Long Short-Term Memory)}]
+A type of recurrent neural network architecture capable of learning long-range temporal dependencies in sequential data. Used in Wi-Fi fingerprinting to model temporal correlations in RSSI measurement sequences.
+
+\item[\textbf{MAE (Mean Absolute Error)}]
+A statistical metric computing the average absolute difference between estimated and true values. Used to evaluate indoor localization accuracy in meters.
+
+\item[\textbf{MEMS (Micro-Electro-Mechanical Systems)}]
+Miniaturized mechanical and electro-mechanical devices fabricated using microfabrication techniques. Modern low-cost IMUs are built on MEMS technology, enabling their integration into smartphones and wearable devices.
+
+\item[\textbf{Multipath}]
+A radio propagation phenomenon where a signal reaches the receiver via multiple paths due to reflection, diffraction, and scattering by walls, furniture, and obstacles. Multipath causes RSSI instability and is a major challenge for Wi-Fi-based indoor localization.
+
+\item[\textbf{NLOS (Non-Line-of-Sight)}]
+A propagation condition where there is no direct unobstructed path between transmitter and receiver. NLOS increases localization errors in both time-of-flight and signal strength based methods.
+
+\item[\textbf{Odometry}]
+The use of motion sensor data to estimate changes in position over time. In pedestrian navigation, odometry is typically derived from IMU measurements (step detection, heading estimation).
+
+\item[\textbf{Particle Filter}]
+A sequential Monte Carlo estimation method that represents probability distributions using a set of weighted samples (particles). Well-suited for non-linear, non-Gaussian localization problems such as IMUand  Wi-Fi fusion.
+
+\item[\textbf{PDR (Pedestrian Dead Reckoning)}]
+An inertial navigation technique for pedestrians that estimates position by detecting steps, estimating step length, and tracking heading using IMU data. Suffers from cumulative drift without external corrections.
+
+\item[\textbf{PlaceSLAM}]
+An extension of FootSLAM that incorporates sporadic place detection hints (RFID tags, visual landmarks, or Wi-Fi beacons) to improve localization accuracy and reduce drift.
+
+\item[\textbf{Pose Graph SLAM}]
+A SLAM formulation that represents the trajectory as a graph of poses connected by relative measurement constraints. Global optimization of the graph corrects accumulated drift, especially when loop closure constraints are added.
+
+\item[\textbf{RFID (Radio Frequency Identification)}]
+A technology using electromagnetic fields to automatically identify and track tags attached to objects. Used in some indoor localization systems as discrete position references (PlaceSLAM).
+
+\item[\textbf{RMSE (Root Mean Square Error)}]
+A statistical metric computing the square root of the mean squared difference between estimated and true values. The primary quantitative metric used to evaluate trajectory accuracy in indoor localization systems.
+
+\item[\textbf{ROS2 (Robot Operating System 2)}]
+An open-source robotics middleware providing tools, libraries, and conventions for building robot applications. Used to control robotic platforms and manage sensor data streams in automated fingerprinting dataset collection.
+
+\item[\textbf{RSS / RSSI (Received Signal Strength / Indicator)}]
+A measurement of the power level of a received radio signal, expressed in dBm. RSSI is the most widely used Wi-Fi signal feature for indoor localization due to its availability on virtually all wireless devices.
+
+\item[\textbf{RTT (Round Trip Time)}]
+The time required for a signal to travel from a sender to a receiver and back. Wi-Fi RTT (IEEE 802.11mc standard) enables distance estimation between a device and an access point, providing more stable ranging than RSSI.
+
+\item[\textbf{SLAM (Simultaneous Localization and Mapping)}]
+A computational problem and family of algorithms in which a mobile agent builds a map of an unknown environment while simultaneously tracking its position within that map. Core technology for autonomous robots and pedestrian navigation systems.
+
+\item[\textbf{SVM (Support Vector Machine)}]
+A supervised machine learning algorithm that finds the optimal hyperplane separating data classes in high-dimensional feature space. Used in Wi-Fi fingerprinting for room or zone classification.
+
+\item[\textbf{ToF (Time of Flight)}]
+A ranging technique that estimates distance by measuring the time a signal takes to travel from transmitter to receiver. Requires precise time synchronization and is the basis for UWB localization systems.
+
+\item[\textbf{Trilateration}]
+A geometric positioning technique that estimates a point's location by computing the intersection of circles (2D) or spheres (3D) defined by known distances from three or more reference points. Used with RSSI-to-distance conversion for Wi-Fi localization.
+
+\item[\textbf{UWB (Ultra-Wideband)}]
+A short-range radio technology using extremely short pulses across a wide frequency spectrum. Provides centimeter-level localization accuracy through precise time-of-flight ranging, but requires dedicated infrastructure.
+
+\item[\textbf{Visual SLAM}]
+A family of SLAM algorithms that use camera images as the primary sensor input for simultaneous environment mapping and position tracking. Can be combined with Wi-Fi or inertial data in hybrid localization systems.
+
+\item[\textbf{Wi-Fi RTT (Wi-Fi Round Trip Time)}]
+See RTT. The IEEE 802.11mc standard extension enabling Wi-Fi access points to respond to ranging requests, allowing mobile devices to estimate their distance to APs without knowing their geographic coordinates.
+
+\item[\textbf{WiSLAM}]
+A hybrid indoor localization approach combining Wi-Fi signal measurements (RSSI or RTT) with SLAM techniques to simultaneously estimate a mobile user's position and build a radio map of the environment. Core technology investigated in this research project.
+
+\item[\textbf{ZUPT (Zero Velocity Update)}]
+A technique used in foot-mounted IMU systems that exploits the brief rest phase of the foot during each step to inject a zero-velocity pseudo-measurement, significantly reducing IMU drift compared to pure integration.
+
+\item[\textbf{Zigbee}]
+A low-power, low-data-rate wireless communication protocol based on the IEEE 802.15.4 standard. Used in some IoT and indoor localization applications as an alternative to Wi-Fi or Bluetooth.
+
+\end{description}
+\cleardoublepage
+  
+\end{document}
+
